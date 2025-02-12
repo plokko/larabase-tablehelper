@@ -1,0 +1,5 @@
+<?php
+/// TableHelper configuration ///
+return [
+    //...
+];
