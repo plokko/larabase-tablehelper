@@ -5,7 +5,7 @@
         "laravel",
         "tablehelper",
         "inertiajs",
-        "spatie/laravel-query-builder"
+        "spatie laravel-query-builder"
     ],
     "type": "library",
     "autoload": {
