@@ -1,37 +1,37 @@
 {
-    "name": "plokko/larabase-tablehelper",
-    "description": "A dynamic Inertiajs table helper for Laravel.",
-    "keywords": [
-        "laravel",
-        "tablehelper",
-        "inertiajs",
-        "spatie laravel-query-builder"
-    ],
-    "type": "library",
-    "autoload": {
-        "psr-4": {
-            "Plokko\\LaravelTableHelper\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Francesco Pellerone"
-        }
-    ],
-    "require": {
-        "php": ">=8.2",
-        "laravel/framework": ">=8.0",
-        "inertiajs/inertia-laravel": ">=1.0",
-        "spatie/laravel-query-builder": "^6.3"
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Plokko\\LaravelTableHelper\\LaravelTableHelperServiceProvider"
-            ],
-            "aliases": {
-                "TableHelper": "Plokko\\LaravelTableHelper\\TableHelper"
-            }
-        }
+  "name": "plokko/larabase-tablehelper",
+  "description": "A dynamic Inertiajs table helper for Laravel.",
+  "keywords": [
+    "laravel",
+    "tablehelper",
+    "inertiajs",
+    "spatie laravel-query-builder"
+  ],
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Plokko\\LaravelTableHelper\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "Francesco Pellerone"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "laravel/framework": ">=8.0",
+    "inertiajs/inertia-laravel": ">=1.0",
+    "spatie/laravel-query-builder": "^6.3"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Plokko\\LaravelTableHelper\\LaravelTableHelperServiceProvider"
+      ],
+      "aliases": {
+        "TableHelper": "Plokko\\LaravelTableHelper\\TableHelper"
+      }
+    }
+  }
 }

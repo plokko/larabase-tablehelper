@@ -1,5 +1,5 @@
 import qs from 'qs';
-import {router} from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 
 function filterKeyPrefix(data, prefix) {
     return (!prefix) ? data :
@@ -14,7 +14,7 @@ function filterKeyPrefix(data, prefix) {
 
 class SortParams {
     static parse(queryString) {
-        console.log('queryString', queryString);
+        //console.log('queryString', queryString);
         return queryString?.split(',')
             // Remove empty
             .filter((e) => !!e)
@@ -27,7 +27,7 @@ class SortParams {
                     key = key.substring(1);
                     order = 'desc';
                 }
-                return {key, order};
+                return { key, order };
             }) || [];
     }
 
@@ -46,11 +46,12 @@ class TableQueryParser {
     constructor(name, prefix, opt) {
         this.loading = false;
 
-        this.query = qs.parse(window.location.search, {ignoreQueryPrefix: true});
+        this.query = qs.parse(window.location.search, { ignoreQueryPrefix: true });
 
         this.name = name;
         this.prefix = prefix;
 
+        this.dataPrefix = opt?.dataPrefix || '_tables';
         const filterKey = opt?.parameters?.filter || 'filter';
         this.filterKey = filterKey;
         const sortKey = opt?.parameters?.sort || 'sort';
@@ -98,11 +99,12 @@ class TableQueryParser {
 
     get(filter, sort, page) {
         const url = location.pathname + '?' + this.getUrlParams(filter, sort, page);
+        const resource = `${this.dataPrefix}.${this.name}`;
 
-        console.log(url);
+        //console.log('tablequeryparser.get', { filter, sort, page, url, resource });
 
         router.visit(url, {
-            only: [this.name],
+            only: [resource],
 
             onStart: visit => {
                 this.loading = true;

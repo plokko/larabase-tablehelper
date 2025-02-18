@@ -17,8 +17,7 @@ class FieldColumn extends TableColumn
         public ?string                        $type = null,
         public null|bool|string|AllowedSort   $sort = null,
         public null|bool|string|AllowedFilter $filter = null,
-    )
-    {
+    ) {
         parent::__construct(
             name: $name,
             label: $label,
@@ -32,26 +31,26 @@ class FieldColumn extends TableColumn
             $data->addSort($sort);
         }
         if ($filter = $this->parseFilter($this->filter ?? $data->getColumnDefault('filter'))) {
-            $data->addFilter($this->parseFilter($filter));
+            $data->addFilter($filter);
         }
 
         if ($this->visible) {
             $data->addHeader((
-            new TableHeader(
-                name: $this->name,
-                title: $this->label,
-                sortable: !!$sort,
-                filterable: !!$filter,
-                type: $this->type,
-            ))
-                ->translate($data->getfieldLocalization())
+                    new TableHeader(
+                        name: $this->name,
+                        title: $this->label,
+                        sortable: !!$sort,
+                        filterable: !!$filter,
+                        type: $this->type,
+                    ))
+                    ->translate($data->getfieldLocalization())
             );
         }
     }
 
-    protected function parseSort($value): AllowedSort
+    protected function parseSort(null|bool|string|AllowedSort $value): AllowedSort
     {
-        if ($value === false) {
+        if ($value === false || $value === null) {
             return null;
         }
         if ($value instanceof AllowedSort) {
@@ -62,9 +61,9 @@ class FieldColumn extends TableColumn
         return AllowedSort::field($field);
     }
 
-    protected function parseFilter(bool|string|AllowedFilter $value): ?AllowedFilter
+    protected function parseFilter(null|bool|string|AllowedFilter $value): ?AllowedFilter
     {
-        if ($value === false) {
+        if ($value === false || $value === null) {
             return null;
         }
         if ($value instanceof AllowedFilter) {
