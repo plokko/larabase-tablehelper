@@ -30,7 +30,7 @@ class ActionColumn extends DisplayColumn
                 sortable: false,
                 filterable: false,
             ))
-                ->translate($data->getFieldTranslationPrefix()));
+                ->translate($data->getfieldLocalization()));
         }
     }
 }

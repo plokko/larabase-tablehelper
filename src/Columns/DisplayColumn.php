@@ -2,6 +2,7 @@
 
 namespace Plokko\LaravelTableHelper\Columns;
 
+use Plokko\LaravelTableHelper\TableColumn;
 use Plokko\LaravelTableHelper\TableData;
 use Plokko\LaravelTableHelper\TableHeader;
 
@@ -31,7 +32,7 @@ class DisplayColumn extends TableColumn
                 sortable: false,
                 filterable: false,
             ))
-                ->translate($data->getFieldTranslationPrefix()));
+                ->translate($data->getfieldLocalization()));
         }
     }
 }

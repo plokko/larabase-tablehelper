@@ -2,6 +2,7 @@
 
 namespace Plokko\LaravelTableHelper\Columns;
 
+use Plokko\LaravelTableHelper\TableColumn;
 use Plokko\LaravelTableHelper\TableData;
 use Plokko\LaravelTableHelper\TableHeader;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -10,12 +11,12 @@ use Spatie\QueryBuilder\AllowedSort;
 class FieldColumn extends TableColumn
 {
     function __construct(
-        string                         $name,
-        ?string                        $label = null,
-        bool                           $visible = true,
-        public ?string                 $type = null,
-        public null|bool|AllowedSort   $sort = null,
-        public null|bool|AllowedFilter $filter = null,
+        string                                $name,
+        ?string                               $label = null,
+        bool                                  $visible = true,
+        public ?string                        $type = null,
+        public null|bool|string|AllowedSort   $sort = null,
+        public null|bool|string|AllowedFilter $filter = null,
     )
     {
         parent::__construct(
@@ -27,12 +28,11 @@ class FieldColumn extends TableColumn
 
     public function parse(TableData &$data): void
     {
-
-        if ($this->filter) {
-            $data->addFilter($this->getFilter());
+        if ($sort = $this->parseSort($this->sort ?? $data->getColumnDefault('sort'))) {
+            $data->addSort($sort);
         }
-        if ($this->sort) {
-            $data->addSort($this->getSort());
+        if ($filter = $this->parseFilter($this->filter ?? $data->getColumnDefault('filter'))) {
+            $data->addFilter($this->parseFilter($filter));
         }
 
         if ($this->visible) {
@@ -40,34 +40,76 @@ class FieldColumn extends TableColumn
             new TableHeader(
                 name: $this->name,
                 title: $this->label,
-                sortable: !!$this->sort,
-                filterable: !!$this->filter,
+                sortable: !!$sort,
+                filterable: !!$filter,
                 type: $this->type,
             ))
-                ->translate($data->getFieldTranslationPrefix())
+                ->translate($data->getfieldLocalization())
             );
         }
     }
 
-    protected function getFilter(): AllowedFilter
+    protected function parseSort($value): AllowedSort
     {
-        if ($this->filter instanceof AllowedFilter) {
-            return $this->filter;
+        if ($value === false) {
+            return null;
+        }
+        if ($value instanceof AllowedSort) {
+            return $value;
         }
 
+        $field = (is_string($value)) ? $value : $this->name;
+        return AllowedSort::field($field);
+    }
+
+    protected function parseFilter(bool|string|AllowedFilter $value): ?AllowedFilter
+    {
+        if ($value === false) {
+            return null;
+        }
+        if ($value instanceof AllowedFilter) {
+            return $value;
+        }
+
+
+        $field = (is_string($value)) ? $value : $this->name;
         ///TBD default filtering type based on field type
         return match ($this->type) {
-            'date' => AllowedFilter::exact($this->name),
-            'boolean' => AllowedFilter::exact($this->name),
-            'number' => AllowedFilter::exact($this->name),
+            'date' => AllowedFilter::exact($field),
+            'boolean' => AllowedFilter::exact($field),
+            'number' => AllowedFilter::exact($field),
 
-            'string' => AllowedFilter::partial($this->name),
-            default => AllowedFilter::partial($this->name)
+            'string' => AllowedFilter::partial($field),
+            default => AllowedFilter::partial($field)
         };
     }
 
-    protected function getSort(): AllowedSort
+    /**
+     * Set sort
+     * @param null|bool|AllowedSort $sort
+     */
+    public function sort(null|bool|AllowedSort $sort = null): self
     {
-        return $this->sort instanceof AllowedSort ? $this->sort : AllowedSort::field($this->name);
+        $this->sort = $sort;
+        return $this;
+    }
+
+    /**
+     * Set filters
+     * @param null|bool|AllowedFilter $filter
+     */
+    public function filter(null|bool|AllowedFilter $filter = null): self
+    {
+        $this->filter = $filter;
+        return $this;
+    }
+
+    /**
+     * Set type
+     */
+    public function type(?string $type = null): self
+    {
+        $this->type = $type;
+        return $this;
     }
 }
