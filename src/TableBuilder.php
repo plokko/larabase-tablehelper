@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Plokko\LaravelTableHelper\Columns\FieldColumn;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class TableBuilder
 {
-    public ?string $fieldLocalization = null;
+    public ?string $columnsLocalization = null;
     public ?string $resource = null;
     protected string $joinChar = '.';
 
@@ -54,7 +55,7 @@ class TableBuilder
      */
     public function columns(array $columns): self
     {
-        $this->columns = array_map(fn($c) => is_string($c) ? TableColumn::field(name: $c) : $c, $columns);
+        $this->columns = array_map(fn($c) => is_string($c) ? new FieldColumn(name: $c) : $c, $columns);
         return $this;
     }
 
@@ -76,9 +77,9 @@ class TableBuilder
         return $this;
     }
 
-    public function fieldLocalization(?string $fieldLocalization): self
+    public function columnsLocalization(?string $columnsLocalization): self
     {
-        $this->fieldLocalization = $fieldLocalization;
+        $this->columnsLocalization = $columnsLocalization;
         return $this;
     }
 

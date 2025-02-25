@@ -27,12 +27,13 @@ class DisplayColumn extends TableColumn
         if ($this->visible) {
             $data->addHeader((
             new TableHeader(
+                type: 'display',
                 name: $this->name,
                 title: $this->label,
                 sortable: false,
                 filterable: false,
             ))
-                ->translate($data->getfieldLocalization()));
+                ->translate($data->getcolumnsLocalization()));
         }
     }
 }

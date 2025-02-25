@@ -80,9 +80,9 @@ class TableData
         return $this;
     }
 
-    public function getfieldLocalization(): ?string
+    public function getcolumnsLocalization(): ?string
     {
-        return $this->table->fieldLocalization;
+        return $this->table->columnsLocalization;
     }
 
 

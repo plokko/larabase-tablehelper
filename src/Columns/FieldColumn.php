@@ -17,7 +17,8 @@ class FieldColumn extends TableColumn
         public ?string                        $type = null,
         public null|bool|string|AllowedSort   $sort = null,
         public null|bool|string|AllowedFilter $filter = null,
-    ) {
+    )
+    {
         parent::__construct(
             name: $name,
             label: $label,
@@ -36,14 +37,14 @@ class FieldColumn extends TableColumn
 
         if ($this->visible) {
             $data->addHeader((
-                    new TableHeader(
-                        name: $this->name,
-                        title: $this->label,
-                        sortable: !!$sort,
-                        filterable: !!$filter,
-                        type: $this->type,
-                    ))
-                    ->translate($data->getfieldLocalization())
+            new TableHeader(
+                name: $this->name,
+                title: $this->label,
+                sortable: !!$sort,
+                filterable: !!$filter,
+                format: $this->type,
+            ))
+                ->translate($data->getcolumnsLocalization())
             );
         }
     }
