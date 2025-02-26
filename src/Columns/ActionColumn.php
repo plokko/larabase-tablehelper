@@ -16,6 +16,7 @@ class ActionColumn extends DisplayColumn
         bool                     $visible = true,
         protected array          $actions = [],
         public null|string|array $actionsLocalization = null,
+        public ?bool             $group = null,
     )
     {
         parent::__construct(
@@ -44,6 +45,7 @@ class ActionColumn extends DisplayColumn
                 //filterable: false,
                 actions: $this->actions, /// Action list
                 actionsLocalization: $this->actionsLocalization, // Action localization
+                group: $this->group,
             ))
                 ->translate($data->getcolumnsLocalization()));
         }

@@ -7,16 +7,18 @@ use Plokko\LaravelTableHelper\NamedParamResource;
 class RowAction extends NamedParamResource
 {
 
-    protected static array $params = ['route', 'link', 'label', 'icon', 'color'];
+    protected static array $params = ['route', 'method', 'link', 'label', 'icon', 'color', 'confirm'];
     protected static array $extraProps = ['name'];
 
     /**
      * @param string $name
      * @param ?string $route
+     * @param ?string $method
      * @param ?string $link
      * @param ?string $label
      * @param ?string $icon
      * @param ?string $color
+     * @param ?string $confirm
      */
     function __construct(
         public readonly string $name,
@@ -55,13 +57,15 @@ class RowAction extends NamedParamResource
         array  $actions = [
             'view',
             'edit',
-            'delete'
+            'destroy'
         ]
     ): array
     {
         return array_map((fn($action) => new static(
             name: $action,
             route: "$resource.$action",
+            confirm: ($action === 'destroy') ? trans('common.confirm-delete') : null,
+            method: ($action === 'destroy') ? 'delete' : null,
         )), $actions);
     }
 }
