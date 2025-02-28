@@ -27,6 +27,16 @@
         </template>
         <template v-else>{{ formatItem(header, item) }}</template>
       </template>
+
+
+      <!-- custom paginator -->
+      <template v-slot:bottom>
+        <slot name="bottom" v-bind="{ page, lastPage }">
+          <div class="text-center pt-2">
+            <v-pagination v-model="page" :length="lastPage" :total-visible="7"/>
+          </div>
+        </slot>
+      </template>
     </v-data-table-server>
   </div>
 </template>
@@ -54,6 +64,14 @@ export default {
     }
   },
   computed: {
+    page: {
+      get() {
+        return this.currentPage;
+      },
+      set(page) {
+        this.setPage(page);
+      },
+    },
     itemsPerPage: {
       get() {
         return this.perPage;
@@ -132,6 +150,15 @@ export default {
       }
 
       return value;
+    },
+    setPage(page) {
+      console.warn('setpage', page)
+      if (page === this.currentPage) {
+        return;
+      }
+      const itemsPerPage = this.itemsPerPage;
+      const sortBy = this.parser.sort;
+      this.loadItems({page, sortBy, itemsPerPage});
     }
   },
   components: {
