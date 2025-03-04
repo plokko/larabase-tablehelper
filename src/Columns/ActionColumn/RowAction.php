@@ -58,14 +58,33 @@ class RowAction extends NamedParamResource
             'view',
             'edit',
             'destroy'
-        ]
+        ],
     ): array
     {
-        return array_map((fn($action) => new static(
-            name: $action,
-            route: "$resource.$action",
-            confirm: ($action === 'destroy') ? trans('common.confirm-delete') : null,
-            method: ($action === 'destroy') ? 'delete' : null,
-        )), $actions);
+        $items = [];
+        foreach ($actions as $key => $action) {
+            $name = is_array($action) ? $key : $action;
+
+            $defaults = [
+                'route' => "$resource.$name",
+                'confirm' => ($name === 'destroy') ? trans('common.confirm-delete') : null,
+                'method' => ($name === 'destroy') ? 'delete' : null,
+            ];
+
+            $items[] = new static(
+                ...(is_array($action) ?
+                [
+                    ...$defaults,
+                    ...$action,
+                    'name' => $key
+                ] :
+
+                [
+                    ...$defaults,
+                    'name' => $name,
+                ])
+            );
+        }
+        return $items;
     }
 }
