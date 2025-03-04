@@ -17,6 +17,8 @@ class TableBuilder
     public ?string $resource = null;
     protected string $joinChar = '.';
 
+    protected null|AllowedSort|array|string $defaultSorts = null;
+
     protected array $columnDefaults = [
         'label' => null,
         'type' => null,
@@ -124,10 +126,15 @@ class TableBuilder
     {
         $rq = $this->parseRequest($request ?? request());
 
+        $builder = QueryBuilder::for($this->subject, $rq);
+        if ($this->defaultSorts !== null) {
+            $builder->defaultSorts($this->defaultSorts);
+        }
+
         $dt = new TableData(
             table: $this,
             request: $rq,
-            builder: QueryBuilder::for($this->subject, $rq),
+            builder: $builder,
         );
 
         foreach ($this->columns as $column) {
@@ -154,12 +161,14 @@ class TableBuilder
         $query = $request->query();
 
         foreach ($query as $k => $v) {
-            if (in_array($k, [
-                ///TODO: use names from config?
-                $prefix . 'sort',
-                $prefix . 'filter',
-                $prefix . 'page',
-            ])) {
+            if (
+                in_array($k, [
+                    ///TODO: use names from config?
+                    $prefix . 'sort',
+                    $prefix . 'filter',
+                    $prefix . 'page',
+                ])
+            ) {
                 $k = substr($k, $prefixLen);
                 $query[$k] = $v;
             }
@@ -173,6 +182,12 @@ class TableBuilder
     public function getPrefix(): ?string
     {
         return ($this->name == null) ? null : $this->name . $this->joinChar;
+    }
+
+    public function defaultSorts(null|AllowedSort|array|string $sorts): self
+    {
+        $this->defaultSorts = $sorts;
+        return $this;
     }
 
     /**
