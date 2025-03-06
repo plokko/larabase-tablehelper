@@ -126,14 +126,44 @@ export default {
     },
     onAction(action) {
       console.log('onAction', Object.assign({}, this.action));
-      const url = action.route ? route(action.route, Object.assign({}, this.value)) : action.url;
+
+      const url = this.getActionUrl(action);
       const method = action.method ?? 'get';
+
       if (!action.confirm || confirm(action.confirm)) {
         if (url) {
           router.visit(url, {method,});
         }
       }
-    }
+    },
+    getActionUrl(action) {
+      //route
+      if (action.route) {
+        let data = Object.assign({}, action);
+
+        if (action.routeBindings) {
+          let binds = action.routeBindings;
+          if (typeof binds === 'string') {
+            binds = binds.split(',');
+          }
+
+          if (Array.isArray(binds)) {
+            data = binds.map((k) => this.value[k]);
+          } else {
+            data = {};
+            for (const key of binds) {
+              const mapTo = binds[key];
+              data[key] = this.data[mapTo];
+            }
+          }
+        }
+
+        return route(action.route, data);
+
+      }
+      return action.link;
+    },
+
   }
 }
 </script>

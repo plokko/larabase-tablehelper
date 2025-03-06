@@ -68,7 +68,7 @@ class TableData
 
         $sort = $this->request->has($param) ? array_filter(explode(',', $this->request->input($param))) : null;
 
-        return empty($sort) ? $this->defaultSorts : $sort;
+        return empty($sort) ? $this->defaultSorts ?? [] : $sort;
     }
 
     public function getCurrentPage(): int

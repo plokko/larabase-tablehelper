@@ -7,12 +7,13 @@ use Plokko\LaravelTableHelper\NamedParamResource;
 class RowAction extends NamedParamResource
 {
 
-    protected static array $params = ['route', 'method', 'link', 'label', 'icon', 'color', 'confirm'];
+    protected static array $params = ['route', 'routeBindings', 'method', 'link', 'label', 'icon', 'color', 'confirm'];
     protected static array $extraProps = ['name'];
 
     /**
      * @param string $name
      * @param ?string $route
+     * @param null|string|array $routeBindings
      * @param ?string $method
      * @param ?string $link
      * @param ?string $label
@@ -34,6 +35,7 @@ class RowAction extends NamedParamResource
      *
      * @param string $name
      * @param ?string $route
+     * @param null|string|array $routeBindings
      * @param ?string $link
      * @param ?string $label
      * @param ?string $icon
@@ -53,12 +55,13 @@ class RowAction extends NamedParamResource
      * @return RowAction[] List of generated actions
      */
     public static function forResource(
-        string $resource,
-        array  $actions = [
+        string            $resource,
+        array             $actions = [
             'view',
             'edit',
             'destroy'
         ],
+        null|string|array $routeBindings = null,
     ): array
     {
         $items = [];
@@ -69,6 +72,7 @@ class RowAction extends NamedParamResource
                 'route' => "$resource.$name",
                 'confirm' => ($name === 'destroy') ? trans('common.confirm-delete') : null,
                 'method' => ($name === 'destroy') ? 'delete' : null,
+                'routeBindings' => $routeBindings,
             ];
 
             $items[] = new static(
