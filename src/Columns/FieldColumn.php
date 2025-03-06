@@ -49,7 +49,7 @@ class FieldColumn extends TableColumn
         }
     }
 
-    protected function parseSort(null|bool|string|AllowedSort $value): AllowedSort
+    protected function parseSort(null|bool|string|AllowedSort $value): ?AllowedSort
     {
         if ($value === false || $value === null) {
             return null;

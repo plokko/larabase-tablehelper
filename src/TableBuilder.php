@@ -13,8 +13,6 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class TableBuilder
 {
-    public ?string $columnsLocalization = null;
-    public ?string $resource = null;
     protected string $joinChar = '.';
 
     protected null|AllowedSort|array|string $defaultSorts = null;
@@ -26,28 +24,39 @@ class TableBuilder
         'filter' => null,
     ];
 
-
     /**
-     * @var array<TableColumn> Table column declaration
+     * @param array<TableColumn> $columns Table column declaration
+     * @param array<bool|string|AllowedFilter> $filters Additional filters
      */
-    protected array $columns = [];
-
     function __construct(
         protected EloquentBuilder|Relation|string $subject,
         public ?string                            $name = null,
+        public ?string                            $resource = null,
+        public ?string                            $columnsLocalization = null,
+        protected array                           $columns = [],
+        protected array                           $filters = [],
     )
     {
     }
 
+    /**
+     * @param array<TableColumn> $columns Table column declaration
+     * @param array<bool|string|AllowedFilter> $filters Additional filters
+     */
     static function make(
         ?string                         $name,
         EloquentBuilder|Relation|string $subject,
-        ?string                         $resource = null
+        ?string                         $resource = null,
+        array                           $columns = [],
+        array                           $filters = [],
     ): TableBuilder
     {
         return new self(
             subject: $subject,
             name: $name,
+            resource: $resource,
+            columns: $columns,
+            filters: $filters,
         );
     }
 
@@ -197,5 +206,17 @@ class TableBuilder
     public function getColumnDefault(string $param): mixed
     {
         return $this->columnDefaults[$param];
+    }
+
+    /**
+     * Set additional filters.
+     *
+     * @see https://spatie.be/docs/laravel-query-builder/v6/features/filtering
+     * @param array<bool|string|AllowedFilter> $filters Additional filters
+     */
+    public function filters(array $filters): self
+    {
+        $this->filters = $filters;
+        return $this;
     }
 }
