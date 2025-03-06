@@ -14,12 +14,13 @@ class TableData
 {
 
     function __construct(
-        public readonly TableBuilder $table,
-        public readonly Request      $request,
-        public QueryBuilder          $builder,
-        public array                 $headers = [],
-        public array                 $filter = [],
-        public array                 $sort = [],
+        public readonly TableBuilder            $table,
+        public readonly Request                 $request,
+        public QueryBuilder                     $builder,
+        public array                            $headers = [],
+        public array                            $filter = [],
+        public array                            $sort = [],
+        protected null|AllowedSort|array|string $defaultSorts = null,
     )
     {
     }
@@ -40,12 +41,17 @@ class TableData
         ;
 
         $resource = call_user_func([($this->table->resource ?: JsonResource::class), 'collection'], $result->items());
+
+        $orderBy = $this->getSortParams();
+
         /** @var AnonymousResourceCollection $resource */
         $data = [
             'data' => $resource->toArray($this->request),
+
             /// Extra
-            'order_by' => $this->table->getPrefix(),
+            'order_by' => $orderBy,
             'headers' => $this->headers,
+
             /// Paginator
             'current_page' => $result->currentPage(),
             'last_page' => $result->lastPage(),
@@ -54,6 +60,15 @@ class TableData
         ];
 
         return $data;
+    }
+
+    public function getSortParams(): array
+    {
+        $param = config('query-builder.parameters.sort');
+
+        $sort = $this->request->has($param) ? array_filter(explode(',', $this->request->input($param))) : null;
+
+        return empty($sort) ? $this->defaultSorts : $sort;
     }
 
     public function getCurrentPage(): int

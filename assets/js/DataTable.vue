@@ -22,18 +22,23 @@
                     name: header.value,
                     value: item[header.value]
                 }"/>
+        <template v-else-if="['boolean', 'bool'].includes(header.format)">
+          <span v-if="item[header.value] === null">-</span>
+          <v-icon v-if="item[header.value]" color="success" icon="check_circle"/>
+          <v-icon v-else color="error" icon="cancel"/>
+        </template>
         <template v-else-if="header.type === 'action'">
           <ActionRow v-bind="{ value: item, header, }"/>
         </template>
         <template v-else>{{ formatItem(header, item) }}</template>
       </template>
 
-
       <!-- custom paginator -->
       <template v-slot:bottom>
         <slot name="bottom" v-bind="{ page, lastPage }">
-          <div class="text-center pt-2">
+          <div class="d-flex justify-center align-center text-center pt-2">
             <v-pagination v-model="page" :length="lastPage" :total-visible="7"/>
+            <v-btn icon="refresh" size="small" variant="text" @click="reload"/>
           </div>
         </slot>
       </template>
@@ -51,19 +56,17 @@ export default {
   },
   data() {
     const dataPrefix = '_tables';
-    const name = this.name ?? 'default';
 
-    const table = this.$page.props[dataPrefix][name];
-    const prefix = table?.prefix ?? '';
-
-    const parser = new TableQueryParser(name, prefix, {dataPrefix});
+    const parser = new TableQueryParser(this.name, {dataPrefix});
 
     return {
-      table,
       parser,
     }
   },
   computed: {
+    table() {
+      return this.parser.table;
+    },
     page: {
       get() {
         return this.currentPage;
@@ -159,6 +162,9 @@ export default {
       const itemsPerPage = this.itemsPerPage;
       const sortBy = this.parser.sort;
       this.loadItems({page, sortBy, itemsPerPage});
+    },
+    reload() {
+      this.parser.reload();
     }
   },
   components: {

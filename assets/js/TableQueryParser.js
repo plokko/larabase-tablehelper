@@ -1,5 +1,5 @@
 import qs from 'qs';
-import {router} from '@inertiajs/vue3'
+import {router, usePage} from '@inertiajs/vue3'
 
 function filterKeyPrefix(data, prefix) {
     return (!prefix) ? data :
@@ -15,7 +15,7 @@ function filterKeyPrefix(data, prefix) {
 class SortParams {
     static parse(queryString) {
         //console.log('queryString', queryString);
-        return queryString?.split(',')
+        return (Array.isArray(queryString) ? queryString : queryString?.split(','))
             // Remove empty
             .filter((e) => !!e)
             /// Unique
@@ -41,35 +41,47 @@ class SortParams {
  * @property {array} filter - Array of filters.
  * @property {array} sort - Array of objects with key and order properties.
  * @property {int} page - Current page.
+ *
+ * @property {Object} table
+ * @property {Array} data
+ *
  */
 class TableQueryParser {
-    constructor(name, prefix, opt) {
+    constructor(name, opt) {
         this.loading = false;
 
         this.query = qs.parse(window.location.search, {ignoreQueryPrefix: true});
 
-        this.name = name;
-        this.prefix = prefix;
+        this.name = name ?? 'default';
 
-        this.dataPrefix = opt?.dataPrefix || '_tables';
-        const filterKey = opt?.parameters?.filter || 'filter';
-        this.filterKey = filterKey;
-        const sortKey = opt?.parameters?.sort || 'sort';
-        this.sortKey = sortKey;
+        /// param names
+        this.dataPrefix = opt?.dataPrefix ?? '_tables';
+        this.filterKey = opt?.parameters?.filter ?? 'filter';
+        this.sortKey = opt?.parameters?.sort ?? 'sort';
 
 
-        const queryData = filterKeyPrefix(this.query, prefix);
+        const page = usePage();
+
+        this.table = page.props[this.dataPrefix][this.name];
+        this.prefix = this.table?.prefix ?? '';
+
+        const queryData = filterKeyPrefix(this.query, this.prefix);
 
         this.queryData = queryData;
 
         console.warn('QUERYDATA:::', queryData);
 
-        this.filter = queryData[filterKey] || {}
-        this.sort = SortParams.parse(queryData[sortKey]);
+        this.filter = queryData[this.filterKey] || {}
+
+        this.sort = SortParams.parse(this.table?.order_by ?? queryData[this.sortKey]);
+
         this.page = parseInt(queryData.page) || 1;
 
     }
 
+    get data() {
+        return this.table?.data;
+    }
 
     getUrlParams(filter, sort, page) {
 
@@ -131,4 +143,5 @@ class TableQueryParser {
 
 export {
     TableQueryParser,
+    SortParams,
 };

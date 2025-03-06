@@ -135,6 +135,7 @@ class TableBuilder
             table: $this,
             request: $rq,
             builder: $builder,
+            defaultSorts: $this->defaultSorts,
         );
 
         foreach ($this->columns as $column) {
