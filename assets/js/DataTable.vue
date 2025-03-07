@@ -44,15 +44,6 @@
         </slot>
       </template>
     </v-data-table-server>
-    <pre>{{
-        {
-          searchParam: parser.searchParam,
-          searchValue: searchValue,
-          v: parser.searchValue,
-          queryData: parser.queryData
-        }
-      }}
-</pre>
   </div>
 </template>
 <script>
