@@ -58,33 +58,55 @@ class TableQueryParser {
         this.dataPrefix = opt?.dataPrefix ?? '_tables';
         this.filterKey = opt?.parameters?.filter ?? 'filter';
         this.sortKey = opt?.parameters?.sort ?? 'sort';
-
-
         const page = usePage();
 
         this.table = page.props[this.dataPrefix][this.name];
         this.prefix = this.table?.prefix ?? '';
 
-        const queryData = filterKeyPrefix(this.query, this.prefix);
+        this.queryData = filterKeyPrefix(this.query, this.prefix);
 
-        this.queryData = queryData;
+        console.warn('QUERYDATA:::', this.queryData);
 
-        console.warn('QUERYDATA:::', queryData);
+        this.filter = this.queryData[this.filterKey] || {}
 
-        this.filter = queryData[this.filterKey] || {}
+        this.sort = SortParams.parse(this.table?.order_by ?? this.queryData[this.sortKey]);
 
-        this.sort = SortParams.parse(this.table?.order_by ?? queryData[this.sortKey]);
-
-        this.page = parseInt(queryData.page) || 1;
-
+        this.page = parseInt(this.queryData.page) || 1;
     }
 
     get data() {
         return this.table?.data;
     }
 
-    getUrlParams(filter, sort, page) {
+    get search() {
+        return this.table?.search;
+    }
 
+    get searchParam() {
+        return this.search?.name;
+    }
+
+    get searchValue() {
+        return this.queryData[this.searchParam];
+    }
+
+    set searchValue(search) {
+        ///tbd!
+        if (!this.searchParam) {
+            console.warn('Cannot search with an empty search param')
+            return;
+        }
+        this.reloadWith({
+            page: 1,
+            search,
+        });
+    }
+
+    get showSearch() {
+        return this.table?.search && (this.table?.search.show !== false);
+    }
+
+    _getUrlParams(filter, sort, page, search) {
         let query = JSON.parse(JSON.stringify(this.query));///deep clone
         const prefix = this.prefix;
 
@@ -105,14 +127,27 @@ class TableQueryParser {
             }
         }
 
+        if (this.searchParam) {
+            query[`${prefix}${this.searchParam}`] = search;
+        }
+
         query[prefix + 'page'] = page || this.page;
 
         return qs.stringify(query);
     }
 
+    reloadWith(params) {
 
-    get(filter, sort, page) {
-        const url = location.pathname + '?' + this.getUrlParams(filter, sort, page);
+        const filter = params && params?.filter !== undefined ? params?.filter : this.filter;
+        const sort = params && params.sort !== undefined ? params?.sort : this.sort;
+        const search = params && params.search !== undefined ? params?.search : this.searchValue;
+        const page = params?.page ?? this.page;
+
+        this.get(filter, sort, page, search);
+    }
+
+    get(filter, sort, page, search) {
+        const url = location.pathname + '?' + this._getUrlParams(filter, sort, page, search);
         const resource = `${this.dataPrefix}.${this.name}`;
         //console.log('tablequeryparser.get', { url,filter, sort, page,  resource });
 

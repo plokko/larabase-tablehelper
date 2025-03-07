@@ -1,5 +1,6 @@
 <template>
   <div>
+    <SearchBar v-if="hasSearchBar" v-model="searchValue" :search="table?.search"/>
     <v-data-table-server v-model:items-per-page="itemsPerPage" v-bind="{
             headers,
             items,
@@ -43,11 +44,21 @@
         </slot>
       </template>
     </v-data-table-server>
+    <pre>{{
+        {
+          searchParam: parser.searchParam,
+          searchValue: searchValue,
+          v: parser.searchValue,
+          queryData: parser.queryData
+        }
+      }}
+</pre>
   </div>
 </template>
 <script>
 import {TableQueryParser} from './TableQueryParser';
 import ActionRow from './DataTable/ActionRow.vue';
+import SearchBar from './DataTable/SearchBar.vue';
 
 export default {
   props: {
@@ -57,6 +68,7 @@ export default {
   data() {
     const dataPrefix = '_tables';
 
+
     const parser = new TableQueryParser(this.name, {dataPrefix});
 
     return {
@@ -64,6 +76,14 @@ export default {
     }
   },
   computed: {
+    searchValue: {
+      get() {
+        return this.parser.searchValue
+      },
+      set(v) {
+        this.parser.searchValue = v;
+      }
+    },
     table() {
       return this.parser.table;
     },
@@ -122,6 +142,9 @@ export default {
       }
 
       return slots;
+    },
+    hasSearchBar() {
+      return this.parser.showSearch;
     }
   },
   methods: {
@@ -169,6 +192,7 @@ export default {
   },
   components: {
     ActionRow,
+    SearchBar,
   }
 }
 </script>

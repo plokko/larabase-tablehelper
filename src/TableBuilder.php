@@ -35,6 +35,7 @@ class TableBuilder
         public ?string                            $columnsLocalization = null,
         protected array                           $columns = [],
         protected array                           $filters = [],
+        public ?SearchOptions                     $searchOptions = null
     )
     {
     }
@@ -49,6 +50,7 @@ class TableBuilder
         ?string                         $resource = null,
         array                           $columns = [],
         array                           $filters = [],
+        ?SearchOptions                  $searchOptions = null
     ): TableBuilder
     {
         return new self(
@@ -57,6 +59,7 @@ class TableBuilder
             resource: $resource,
             columns: $columns,
             filters: $filters,
+            searchOptions: $searchOptions,
         );
     }
 
@@ -217,6 +220,24 @@ class TableBuilder
     public function filters(array $filters): self
     {
         $this->filters = $filters;
+        return $this;
+    }
+
+
+    public function search(
+        null|string|array $field,
+        null|array|bool   $options = null,
+        bool              $show = true,
+        string            $name = 'search',
+    ): self
+    {
+        $this->searchOptions = $field !== null ? new SearchOptions(
+            field: $field,
+            options: $options,
+            show: $show,
+            name: $name,
+        ) : null;
+
         return $this;
     }
 }

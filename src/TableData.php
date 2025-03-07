@@ -50,7 +50,9 @@ class TableData
 
             /// Extra
             'order_by' => $orderBy,
+            ///-- Options
             'headers' => $this->headers,
+            'search' => $this->table->searchOptions,
 
             /// Paginator
             'current_page' => $result->currentPage(),
