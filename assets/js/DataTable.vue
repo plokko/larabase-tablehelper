@@ -1,8 +1,24 @@
 <template>
   <div>
-    <SearchBar v-if="hasSearchBar" v-model="searchValue" :search="table?.search"/>
-
-    <Filters v-if="hasFilters" v-model:filters="filters" v-bind="{ activeFilters, loading, }"/>
+    <v-row v-if="hasSearchBar" class="align-center">
+      <v-col class="flex-grow-1 flex-shrink-0">
+        <SearchBar v-model="searchValue" :search="table?.search"/>
+      </v-col>
+      <v-col v-if="hasFilters" class="flex-grow-0 flex-shrink-1">
+        <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
+                       @apply="applyFilter"/>
+      </v-col>
+    </v-row>
+    <v-row v-if="hasFilters" class="align-center" no-gutters>
+      <v-col class="flex-grow-1 flex-shrink-0">
+        <FilterChip v-for="(filter, k) of activeFilters" v-model="activeFilters[k]"
+                    @click="editFilters = true;"/>
+      </v-col>
+      <v-col v-if="!hasSearchBar" class="flex-grow-0 flex-shrink-1">
+        <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
+                       @apply="applyFilter"/>
+      </v-col>
+    </v-row>
     <v-data-table-server v-model:items-per-page="itemsPerPage" v-bind="{
             headers,
             items,
@@ -52,7 +68,8 @@
 import {TableQueryParser} from './TableQueryParser';
 import ActionRow from './DataTable/ActionRow.vue';
 import SearchBar from './DataTable/SearchBar.vue';
-import Filters from './DataTable/Filters.vue';
+import FilterChip from './DataTable/FilterChip.vue';
+import FiltersEditor from './DataTable/FiltersEditor.vue';
 
 export default {
   props: {
@@ -65,6 +82,7 @@ export default {
     });
     return {
       parser,
+      editFilters: false,
     }
   },
   computed: {
@@ -196,12 +214,18 @@ export default {
     },
     reload() {
       this.parser.reload();
-    }
+    },
+
+    applyFilter(filters) {
+      this.filters = filters;
+      //this.$emit('update:filters', filters);
+    },
   },
   components: {
     ActionRow,
     SearchBar,
-    Filters,
+    FilterChip,
+    FiltersEditor,
   }
 }
 </script>

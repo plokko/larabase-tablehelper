@@ -10,7 +10,6 @@
     </v-row>
   </div>
 </template>
-
 <script>
 import FilterChip from './FilterChip.vue';
 import FiltersEditor from './FiltersEditor.vue';
