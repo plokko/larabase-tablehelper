@@ -65,7 +65,7 @@ class TableQueryParser {
 
         this.queryData = filterKeyPrefix(this.query, this.prefix);
 
-        console.warn('QUERYDATA:::', this.queryData);
+        //console.warn('QUERYDATA:::', this.queryData);
 
         this.filter = this.queryData[this.filterKey] || {}
 
@@ -76,6 +76,10 @@ class TableQueryParser {
 
     get data() {
         return this.table?.data;
+    }
+
+    get headers() {
+        return this.table?.headers;
     }
 
     get search() {
@@ -96,6 +100,7 @@ class TableQueryParser {
             console.warn('Cannot search with an empty search param')
             return;
         }
+        console.warn(`Serching by ${search}`)
         this.reloadWith({
             page: 1,
             search,
@@ -104,6 +109,51 @@ class TableQueryParser {
 
     get showSearch() {
         return this.table?.search && (this.table?.search.show !== false);
+    }
+
+    /// Get filter values
+    get filterValues() {
+
+        const defaults = this.headers.filter(h => h.filterable).map(h => h.name)
+            .reduce((obj, key) => (obj[key] = null, obj), {});
+
+        return Object.assign(defaults, this.filter || {});
+    }
+
+    get filters() {
+        return this.headers
+            .filter(h => h.filterable)
+            .map(h => ({
+                name: h.name,
+                label: h.title,
+                value: this.filter[h.name] ?? null,
+            }));
+
+    }
+
+    set filters(filters) {
+        const filter = {};
+        for (const h of filters) {
+            if (h.value) {
+                filter[h.name] = h.value;
+            }
+        }
+
+        this.reloadWith({
+            filter,
+            page: 1,// Reset page
+        });
+        //alert(JSON.stringify(filter, null, 2));
+    }
+
+    get activeFilters() {
+        return this.headers.filter(h => h.filterable && this.filter[h.name])
+            .map(h => ({
+                name: h.name,
+                label: h.title,
+                value: this.filter[h.name] ?? null,
+            }));
+
     }
 
     _getUrlParams(filter, sort, page, search) {
@@ -137,7 +187,6 @@ class TableQueryParser {
     }
 
     reloadWith(params) {
-
         const filter = params && params?.filter !== undefined ? params?.filter : this.filter;
         const sort = params && params.sort !== undefined ? params?.sort : this.sort;
         const search = params && params.search !== undefined ? params?.search : this.searchValue;

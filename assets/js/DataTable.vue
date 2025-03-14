@@ -1,6 +1,8 @@
 <template>
   <div>
     <SearchBar v-if="hasSearchBar" v-model="searchValue" :search="table?.search"/>
+
+    <Filters v-if="hasFilters" v-model:filters="filters" v-bind="{ activeFilters, loading, }"/>
     <v-data-table-server v-model:items-per-page="itemsPerPage" v-bind="{
             headers,
             items,
@@ -50,6 +52,7 @@
 import {TableQueryParser} from './TableQueryParser';
 import ActionRow from './DataTable/ActionRow.vue';
 import SearchBar from './DataTable/SearchBar.vue';
+import Filters from './DataTable/Filters.vue';
 
 export default {
   props: {
@@ -57,11 +60,9 @@ export default {
     multiSort: {type: Boolean, default: true},
   },
   data() {
-    const dataPrefix = '_tables';
-
-
-    const parser = new TableQueryParser(this.name, {dataPrefix});
-
+    const parser = new TableQueryParser(this.name, {
+      dataPrefix: '_tables'
+    });
     return {
       parser,
     }
@@ -95,13 +96,21 @@ export default {
       },
     },
     headers() {
-      return (this.table?.headers || []).map(h => Object.assign({title: h.name, value: h.name}, h));
+      return (this.parser?.headers || []).map(h => Object.assign({title: h.name, value: h.name}, h));
     },
     items() {
       return this.table?.data || [];
     },
-    filters() {
-      return this.parser.filter;
+    filters: {
+      get() {
+        return this.parser.filters;
+      },
+      set(v) {
+        this.parser.filters = v;
+      },
+    },
+    activeFilters() {
+      return this.parser.activeFilters;
     },
     sortBy() {
       return this.parser.sort;
@@ -136,6 +145,9 @@ export default {
     },
     hasSearchBar() {
       return this.parser.showSearch;
+    },
+    hasFilters() {
+      return this.filters.length > 0;
     }
   },
   methods: {
@@ -149,7 +161,12 @@ export default {
           || page !== this.currentPage
           || itemsPerPage !== this.perPage
       ) {
-        this.parser.get(null, sortBy, page, itemsPerPage);
+        this.parser.reloadWith({
+          //filter
+          sort: sortBy,
+          //search
+          page,
+        });
       }
     },
     formatItem(header, item) {
@@ -184,6 +201,7 @@ export default {
   components: {
     ActionRow,
     SearchBar,
+    Filters,
   }
 }
 </script>

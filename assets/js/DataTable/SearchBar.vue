@@ -4,7 +4,8 @@
             prependIcon: 'search',
             label: 'Ricerca',
             clearable: true,
-            //variant: 'outlined',
+            variant: 'outlined',
+            density: 'comfortable',
 
         }">
             <template v-if="hasOptions" v-slot:append-inner="slots">

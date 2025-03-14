@@ -41,12 +41,11 @@ class TableBuilder
     }
 
     /**
-     * @param array<TableColumn> $columns Table column declaration
-     * @param array<bool|string|AllowedFilter> $filters Additional filters
+     * @param array<TableColumn> $columns TablcolumnDefaultsr> $filters Additional filters
      */
     static function make(
         ?string                         $name,
-        EloquentBuilder|Relation|string $subject,
+        EloquentBuilder|Relation|string $columnDefaultssubject,
         ?string                         $resource = null,
         array                           $columns = [],
         array                           $filters = [],
