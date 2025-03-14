@@ -8,11 +8,18 @@ use JsonSerializable;
 class SearchOptions implements JsonSerializable, Arrayable
 {
     function __construct(
-        public string|array $field,
+        public string|array    $field,
         public null|array|bool $options = null,
-        public bool $show = true,
-        public string $name = 'string',
-    ) {}
+        public bool            $show = true,
+        public string          $name = 'string',
+    )
+    {
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->toArray();
+    }
 
     public function toArray(): array
     {
@@ -22,10 +29,5 @@ class SearchOptions implements JsonSerializable, Arrayable
             'show' => $this->show,
             'name' => $this->name,
         ]);
-    }
-
-    public function jsonSerialize(): mixed
-    {
-        return $this->toArray();
     }
 }
