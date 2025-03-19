@@ -49,29 +49,14 @@ class SortParams {
 class TableQueryParser {
     constructor(name, opt) {
         this.loading = false;
-
-        this.query = qs.parse(window.location.search, {ignoreQueryPrefix: true});
-
         this.name = name ?? 'default';
 
         /// param names
         this.dataPrefix = opt?.dataPrefix ?? '_tables';
         this.filterKey = opt?.parameters?.filter ?? 'filter';
         this.sortKey = opt?.parameters?.sort ?? 'sort';
-        const page = usePage();
 
-        this.table = page.props[this.dataPrefix][this.name];
-        this.prefix = this.table?.prefix ?? '';
-
-        this.queryData = filterKeyPrefix(this.query, this.prefix);
-
-        //console.warn('QUERYDATA:::', this.queryData);
-
-        this.filter = this.queryData[this.filterKey] || {}
-
-        this.sort = SortParams.parse(this.table?.order_by ?? this.queryData[this.sortKey]);
-
-        this.page = parseInt(this.queryData.page) || 1;
+        this._init();
     }
 
     get data() {
@@ -156,6 +141,25 @@ class TableQueryParser {
 
     }
 
+    _init() {
+        this.query = qs.parse(window.location.search, {ignoreQueryPrefix: true});
+
+        const page = usePage();
+
+        this.table = page.props[this.dataPrefix][this.name];
+        this.prefix = this.table?.prefix ?? '';
+
+        this.queryData = filterKeyPrefix(this.query, this.prefix);
+
+        //console.warn('QUERYDATA:::', this.queryData);
+
+        this.filter = this.queryData[this.filterKey] || {}
+
+        this.sort = SortParams.parse(this.table?.order_by ?? this.queryData[this.sortKey]);
+
+        this.page = parseInt(this.queryData.page) || 1;
+    }
+
     _getUrlParams(filter, sort, page, search) {
         let query = JSON.parse(JSON.stringify(this.query));///deep clone
         const prefix = this.prefix;
@@ -186,30 +190,33 @@ class TableQueryParser {
         return qs.stringify(query);
     }
 
-    reloadWith(params) {
+    reloadWith(params, preserveState = true) {
         const filter = params && params?.filter !== undefined ? params?.filter : this.filter;
         const sort = params && params.sort !== undefined ? params?.sort : this.sort;
         const search = params && params.search !== undefined ? params?.search : this.searchValue;
         const page = params?.page ?? this.page;
 
-        this.get(filter, sort, page, search);
+        this.get(filter, sort, page, search, preserveState = true);
     }
 
-    get(filter, sort, page, search) {
+    get(filter, sort, page, search, preserveState = true) {
         const url = location.pathname + '?' + this._getUrlParams(filter, sort, page, search);
         const resource = `${this.dataPrefix}.${this.name}`;
         //console.log('tablequeryparser.get', { url,filter, sort, page,  resource });
 
         router.visit(url, {
             only: [resource],
+            preserveState,
 
             onStart: visit => {
                 this.loading = true;
+                return true;
             },
             onFinish: visit => {
                 this.loading = false;
+                this._init();
             },
-        })
+        });
     }
 
     reload() {
@@ -217,9 +224,11 @@ class TableQueryParser {
             only: [this.name],
             onStart: visit => {
                 this.loading = true;
+                return true;
             },
             onFinish: visit => {
                 this.loading = false;
+                this._init();
             },
         })
     }

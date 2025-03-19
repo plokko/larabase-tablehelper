@@ -76,11 +76,19 @@ import SearchBar from './DataTable/SearchBar.vue';
 import FilterChip from './DataTable/FilterChip.vue';
 import FiltersEditor from './DataTable/FiltersEditor.vue';
 
+function equals(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export default {
   events: ['update:modelValue'],
   props: {
     name: {type: String, required: false},
     multiSort: {type: Boolean, default: true},
+    modelValue: {type: Array, default: () => []},
+
+    showSearch: {type: Boolean, default: true},
+    showFilters: {type: Boolean, default: true},
   },
   data() {
     const parser = new TableQueryParser(this.name, {
@@ -169,10 +177,10 @@ export default {
       return slots;
     },
     hasSearchBar() {
-      return this.parser.showSearch;
+      return this.showSearch && this.parser.showSearch;
     },
     hasFilters() {
-      return this.filters.length > 0;
+      return this.showFilters && this.filters.length > 0;
     },
     showSelect() {
       return !!this.table?.selection?.selection;
@@ -225,7 +233,7 @@ export default {
       return value;
     },
     setPage(page) {
-      console.warn('setpage', page)
+      //console.warn('setpage', page)
       if (page === this.currentPage) {
         return;
       }
@@ -240,6 +248,18 @@ export default {
     applyFilter(filters) {
       this.filters = filters;
       //this.$emit('update:filters', filters);
+    },
+  },
+  watch: {
+    modelValue() {
+      if (!equals(this.selected, this.modelValue)) {
+        this.selected = this.modelValue;
+      }
+    },
+    selected() {
+      if (!equals(this.selected, this.modelValue)) {
+        this.$emit('update:modelValue', this.selected);
+      }
     },
   },
   components: {
