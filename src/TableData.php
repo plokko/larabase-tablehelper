@@ -21,6 +21,7 @@ class TableData
         public array                            $filter = [],
         public array                            $sort = [],
         protected null|AllowedSort|array|string $defaultSorts = null,
+        protected ?array                        $selection = null
     )
     {
     }
@@ -53,6 +54,7 @@ class TableData
             ///-- Options
             'headers' => $this->headers,
             'search' => $this->table->searchOptions,
+            'selection' => $this->selection,
 
             /// Paginator
             'current_page' => $result->currentPage(),

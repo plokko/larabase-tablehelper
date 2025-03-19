@@ -16,6 +16,7 @@ class TableBuilder
     protected string $joinChar = '.';
 
     protected null|AllowedSort|array|string $defaultSorts = null;
+    protected ?array $selection = null;
 
     protected array $columnDefaults = [
         'label' => null,
@@ -147,6 +148,7 @@ class TableBuilder
             request: $rq,
             builder: $builder,
             defaultSorts: $this->defaultSorts,
+            selection: $this->selection,
         );
 
         foreach ($this->columns as $column) {
@@ -237,6 +239,25 @@ class TableBuilder
             name: $name,
         ) : null;
 
+        return $this;
+    }
+
+
+    /**
+     * Sets rows selection options.
+     *
+     * @param null|bool|string $selection Selezione:
+     *  - null|false : Disable selection
+     *  - true : Enable selection and select row object
+     *  - string : Enable selection and select row value with the specified key (ex.'id')
+     */
+    public function selection(
+        null|bool|string $selection,
+    ): self
+    {
+        $this->selection = [
+            'selection' => $selection,
+        ];
         return $this;
     }
 }

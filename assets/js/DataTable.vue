@@ -19,7 +19,7 @@
                        @apply="applyFilter"/>
       </v-col>
     </v-row>
-    <v-data-table-server v-model:items-per-page="itemsPerPage" v-bind="{
+    <v-data-table-server v-model="selected" v-model:items-per-page="itemsPerPage" v-bind="{
             headers,
             items,
             sortBy,
@@ -27,6 +27,11 @@
             multiSort,
             page: currentPage,
             loading,
+
+            showSelect,
+            returnObject,
+            selectStrategy,
+            itemValue,
         }" @update:options="loadItems">
       <!-- Pass all slots/ -->
       <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
@@ -62,6 +67,8 @@
         </slot>
       </template>
     </v-data-table-server>
+    <pre>{{ {selected} }}</pre>
+    <pre>{{ table?.selection }}</pre>
   </div>
 </template>
 <script>
@@ -72,6 +79,7 @@ import FilterChip from './DataTable/FilterChip.vue';
 import FiltersEditor from './DataTable/FiltersEditor.vue';
 
 export default {
+  events: ['update:modelValue'],
   props: {
     name: {type: String, required: false},
     multiSort: {type: Boolean, default: true},
@@ -83,6 +91,7 @@ export default {
     return {
       parser,
       editFilters: false,
+      selected: [],
     }
   },
   computed: {
@@ -166,7 +175,21 @@ export default {
     },
     hasFilters() {
       return this.filters.length > 0;
-    }
+    },
+    showSelect() {
+      return !!this.table?.selection?.selection;
+    },
+    returnObject() {
+      return typeof this.table?.selection?.selection !== 'string';
+    },
+    selectStrategy() {
+      return this.table?.selection?.strategy ?? 'page';
+    },
+    itemValue() {
+      return this.table?.selection?.selection === 'string' ?
+          this.table?.selection?.selection :
+          'id';
+    },
   },
   methods: {
     setItemsPerPage(itemsPerPage) {
