@@ -67,8 +67,6 @@
         </slot>
       </template>
     </v-data-table-server>
-    <pre>{{ {selected} }}</pre>
-    <pre>{{ table?.selection }}</pre>
   </div>
 </template>
 <script>
