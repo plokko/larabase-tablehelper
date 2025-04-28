@@ -9,23 +9,22 @@ use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
-
 class TableData
 {
-
-    function __construct(
-        public readonly TableBuilder            $table,
-        public readonly Request                 $request,
-        public QueryBuilder                     $builder,
-        public array                            $headers = [],
-        public array                            $filter = [],
-        public array                            $sort = [],
+    public function __construct(
+        public readonly TableBuilder $table,
+        public readonly Request $request,
+        public QueryBuilder $builder,
+        public array $headers = [],
+        public array $filter = [],
+        public array $sort = [],
         protected null|AllowedSort|array|string $defaultSorts = null,
-        protected ?array                        $selection = null
-    )
-    {
-    }
+    ) {
 
+        if ($this->defaultSorts !== null) {
+            $this->builder->defaultSorts($this->defaultSorts);
+        }
+    }
 
     public function getHeaders(): array
     {
@@ -34,12 +33,11 @@ class TableData
 
     public function getData(): array
     {
-        //QueryBuilder::for($this->subject, $rq)
+
         $result = $this->builder
             ->allowedFilters($this->filter)
             ->allowedSorts($this->sort)
-            ->paginate() //TBD
-        ;
+            ->paginate();
 
         $resource = call_user_func([($this->table->resource ?: JsonResource::class), 'collection'], $result->items());
 
@@ -54,7 +52,6 @@ class TableData
             ///-- Options
             'headers' => $this->headers,
             'search' => $this->table->searchOptions,
-            'selection' => $this->selection,
 
             /// Paginator
             'current_page' => $result->currentPage(),
@@ -77,25 +74,27 @@ class TableData
 
     public function getCurrentPage(): int
     {
-        return intval($this->request->input("page", 1));
+        return intval($this->request->input('page', 1));
     }
-
 
     public function addHeader(TableHeader $header): self
     {
         $this->headers[] = $header;
+
         return $this;
     }
 
     public function addFilter(string|AllowedFilter $filter): self
     {
         $this->filter[] = $filter;
+
         return $this;
     }
 
     public function addSort(string|AllowedSort $sort): self
     {
         $this->sort[] = $sort;
+
         return $this;
     }
 
@@ -103,7 +102,6 @@ class TableData
     {
         return $this->table->columnsLocalization;
     }
-
 
     public function getColumnDefault(string $param): mixed
     {

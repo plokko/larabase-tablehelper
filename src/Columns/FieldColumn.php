@@ -10,15 +10,14 @@ use Spatie\QueryBuilder\AllowedSort;
 
 class FieldColumn extends TableColumn
 {
-    function __construct(
-        string                                $name,
-        ?string                               $label = null,
-        bool                                  $visible = true,
-        public ?string                        $type = null,
-        public null|bool|string|AllowedSort   $sort = null,
+    public function __construct(
+        string $name,
+        ?string $label = null,
+        bool $visible = true,
+        public ?string $type = null,
+        public null|bool|string|AllowedSort $sort = null,
         public null|bool|string|AllowedFilter $filter = null,
-    )
-    {
+    ) {
         parent::__construct(
             name: $name,
             label: $label,
@@ -37,14 +36,14 @@ class FieldColumn extends TableColumn
 
         if ($this->visible) {
             $data->addHeader((
-            new TableHeader(
-                name: $this->name,
-                title: $this->label,
-                sortable: !!$sort,
-                filterable: !!$filter,
-                format: $this->type,
-            ))
-                ->translate($data->getcolumnsLocalization())
+                    new TableHeader(
+                        name: $this->name,
+                        title: $this->label,
+                        sortable: (bool) $sort,
+                        filterable: (bool) $filter,
+                        format: $this->type,
+                    ))
+                        ->translate($data->getcolumnsLocalization())
             );
         }
     }
@@ -59,7 +58,8 @@ class FieldColumn extends TableColumn
         }
 
         $field = (is_string($value)) ? $value : $this->name;
-        return AllowedSort::field($field);
+
+        return AllowedSort::field($this->name, $field);
     }
 
     protected function parseFilter(null|bool|string|AllowedFilter $value): ?AllowedFilter
@@ -71,8 +71,8 @@ class FieldColumn extends TableColumn
             return $value;
         }
 
-
         $field = (is_string($value)) ? $value : $this->name;
+
         ///TBD default filtering type based on field type
         return match ($this->type) {
             'date' => AllowedFilter::exact($field),
@@ -86,21 +86,21 @@ class FieldColumn extends TableColumn
 
     /**
      * Set sort
-     * @param null|bool|AllowedSort $sort
      */
     public function sort(null|bool|AllowedSort $sort = null): self
     {
         $this->sort = $sort;
+
         return $this;
     }
 
     /**
      * Set filters
-     * @param null|bool|AllowedFilter $filter
      */
     public function filter(null|bool|AllowedFilter $filter = null): self
     {
         $this->filter = $filter;
+
         return $this;
     }
 
@@ -110,6 +110,7 @@ class FieldColumn extends TableColumn
     public function type(?string $type = null): self
     {
         $this->type = $type;
+
         return $this;
     }
 }

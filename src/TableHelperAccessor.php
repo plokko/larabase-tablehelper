@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class TableHelperAccessor
 {
-    public function __construct(protected array $config)
-    {
-    }
+    public function __construct(protected array $config) {}
 
     public function make(EloquentBuilder|Relation|string $subject): TableBuilder
     {

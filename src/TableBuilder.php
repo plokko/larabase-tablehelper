@@ -16,7 +16,6 @@ class TableBuilder
     protected string $joinChar = '.';
 
     protected null|AllowedSort|array|string $defaultSorts = null;
-    protected ?array $selection = null;
 
     protected array $columnDefaults = [
         'label' => null,
@@ -26,33 +25,30 @@ class TableBuilder
     ];
 
     /**
-     * @param array<TableColumn> $columns Table column declaration
-     * @param array<bool|string|AllowedFilter> $filters Additional filters
+     * @param  array<TableColumn>  $columns  Table column declaration
+     * @param  array<bool|string|AllowedFilter>  $filters  Additional filters
      */
-    function __construct(
+    public function __construct(
         protected EloquentBuilder|Relation|string $subject,
-        public ?string                            $name = null,
-        public ?string                            $resource = null,
-        public ?string                            $columnsLocalization = null,
-        protected array                           $columns = [],
-        protected array                           $filters = [],
-        public ?SearchOptions                     $searchOptions = null
-    )
-    {
-    }
+        public ?string $name = null,
+        public ?string $resource = null,
+        public ?string $columnsLocalization = null,
+        protected array $columns = [],
+        protected array $filters = [],
+        public ?SearchOptions $searchOptions = null
+    ) {}
 
     /**
-     * @param array<TableColumn> $columns TablcolumnDefaultsr> $filters Additional filters
+     * @param  array<TableColumn>  $columns  TablcolumnDefaultsr> $filters Additional filters
      */
-    static function make(
-        ?string                         $name,
-        EloquentBuilder|Relation|string $columnDefaultssubject,
-        ?string                         $resource = null,
-        array                           $columns = [],
-        array                           $filters = [],
-        ?SearchOptions                  $searchOptions = null
-    ): TableBuilder
-    {
+    public static function make(
+        ?string $name,
+        EloquentBuilder|Relation|string $subject,
+        ?string $resource = null,
+        array $columns = [],
+        array $filters = [],
+        ?SearchOptions $searchOptions = null
+    ): TableBuilder {
         return new self(
             subject: $subject,
             name: $name,
@@ -65,41 +61,45 @@ class TableBuilder
 
     /**
      * Set the fields for the table
-     * @param array<string|TableColumn> $fields
+     *
+     * @param  array<string|TableColumn>  $fields
      */
     public function columns(array $columns): self
     {
-        $this->columns = array_map(fn($c) => is_string($c) ? new FieldColumn(name: $c) : $c, $columns);
+        $this->columns = array_map(fn ($c) => is_string($c) ? new FieldColumn(name: $c) : $c, $columns);
+
         return $this;
     }
 
     /**
      * Set column default values
-     * @param ?string $label Default label, if not specified and no field translation are specified
-     * @param ?string $type
-     * @param callable(string $fieldName):null|bool|AllowedSort $sort
-     * @param callable(string $fieldName):null|bool|AllowedFilter $filter
+     *
+     * @param  ?string  $label  Default label, if not specified and no field translation are specified
+     * @param  callable(string $fieldName):null|bool|AllowedSort  $sort
+     * @param  callable(string $fieldName):null|bool|AllowedFilter  $filter
      */
     public function columnDefaults(
-        ?string                          $label = null,
-        ?string                          $type = null,
-        null|bool|AllowedSort|callable   $sort = null,
+        ?string $label = null,
+        ?string $type = null,
+        null|bool|AllowedSort|callable $sort = null,
         null|bool|AllowedFilter|callable $filter = null,
-    ): self
-    {
+    ): self {
         $this->columnDefaults = compact('label', 'type', 'sort', 'filter');
+
         return $this;
     }
 
     public function columnsLocalization(?string $columnsLocalization): self
     {
         $this->columnsLocalization = $columnsLocalization;
+
         return $this;
     }
 
     public function useResource(?string $resource): self
     {
         $this->resource = $resource;
+
         return $this;
     }
 
@@ -117,7 +117,7 @@ class TableBuilder
         $prefix = '_tables'; //TODO: TBD
         Inertia::share(
             "$prefix.$name",
-            fn(Request $request) => $this->getData($request),
+            fn (Request $request) => $this->getData($request),
         );
     }
 
@@ -136,23 +136,35 @@ class TableBuilder
      */
     public function getTableData(?Request $request = null): TableData
     {
+        /**
+         * Modifies request removing prefix
+         */
         $rq = $this->parseRequest($request ?? request());
 
-        $builder = QueryBuilder::for($this->subject, $rq);
-        if ($this->defaultSorts !== null) {
-            $builder->defaultSorts($this->defaultSorts);
-        }
+        /**
+         * Create the Spatie QueryBuilder
+         */
+        $builder = new QueryBuilder(
+            subject: $this->subject,
+            request: $rq,
+        );
 
+        /**
+         * Initialize TableData
+         */
         $dt = new TableData(
             table: $this,
             request: $rq,
             builder: $builder,
+            filter: $this->filters,
             defaultSorts: $this->defaultSorts,
-            selection: $this->selection,
         );
 
+        /**
+         * Process column definitions
+         */
         foreach ($this->columns as $column) {
-            /**@var TableColumn $column */
+            /** @var TableColumn $column */
             $column->parse($dt);
         }
 
@@ -201,6 +213,7 @@ class TableBuilder
     public function defaultSorts(null|AllowedSort|array|string $sorts): self
     {
         $this->defaultSorts = $sorts;
+
         return $this;
     }
 
@@ -216,22 +229,22 @@ class TableBuilder
      * Set additional filters.
      *
      * @see https://spatie.be/docs/laravel-query-builder/v6/features/filtering
-     * @param array<bool|string|AllowedFilter> $filters Additional filters
+     *
+     * @param  array<string|AllowedFilter>  $filters  Additional filters
      */
     public function filters(array $filters): self
     {
         $this->filters = $filters;
+
         return $this;
     }
 
-
     public function search(
         null|string|array $field,
-        null|array|bool   $options = null,
-        bool              $show = true,
-        string            $name = 'search',
-    ): self
-    {
+        null|array|bool $options = null,
+        bool $show = true,
+        string $name = 'search',
+    ): self {
         $this->searchOptions = $field !== null ? new SearchOptions(
             field: $field,
             options: $options,
@@ -239,25 +252,6 @@ class TableBuilder
             name: $name,
         ) : null;
 
-        return $this;
-    }
-
-
-    /**
-     * Sets rows selection options.
-     *
-     * @param null|bool|string $selection Selezione:
-     *  - null|false : Disable selection
-     *  - true : Enable selection and select row object
-     *  - string : Enable selection and select row value with the specified key (ex.'id')
-     */
-    public function selection(
-        null|bool|string $selection,
-    ): self
-    {
-        $this->selection = [
-            'selection' => $selection,
-        ];
         return $this;
     }
 }

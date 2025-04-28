@@ -1,4 +1,5 @@
 <?php
+
 /// TableHelper configuration ///
 return [
     //...

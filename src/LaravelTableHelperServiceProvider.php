@@ -2,7 +2,6 @@
 
 namespace Plokko\LaravelTableHelper;
 
-
 use Illuminate\Support\ServiceProvider;
 
 class LaravelTableHelperServiceProvider extends ServiceProvider
@@ -11,8 +10,6 @@ class LaravelTableHelperServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -25,8 +22,6 @@ class LaravelTableHelperServiceProvider extends ServiceProvider
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
     public function register(): void
     {

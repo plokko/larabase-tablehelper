@@ -8,19 +8,17 @@ use Plokko\LaravelTableHelper\TableHeader;
 
 class DisplayColumn extends TableColumn
 {
-    function __construct(
-        string  $name,
+    public function __construct(
+        string $name,
         ?string $label = null,
-        bool    $visible = true,
-    )
-    {
+        bool $visible = true,
+    ) {
         parent::__construct(
             name: $name,
             label: $label,
             visible: $visible,
         );
     }
-
 
     public function parse(TableData &$data): void
     {

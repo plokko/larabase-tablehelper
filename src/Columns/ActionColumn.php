@@ -8,17 +8,14 @@ use Plokko\LaravelTableHelper\TableHeader;
 
 class ActionColumn extends DisplayColumn
 {
-
-
-    function __construct(
-        string                   $name,
-        ?string                  $label = null,
-        bool                     $visible = true,
-        protected array          $actions = [],
+    public function __construct(
+        string $name,
+        ?string $label = null,
+        bool $visible = true,
+        protected array $actions = [],
         public null|string|array $actionsLocalization = null,
-        public ?bool             $group = null,
-    )
-    {
+        public ?bool $group = null,
+    ) {
         parent::__construct(
             name: $name,
             label: $label,
@@ -29,9 +26,9 @@ class ActionColumn extends DisplayColumn
     public function actions(array $actions): self
     {
         $this->actions = $actions;
+
         return $this;
     }
-
 
     public function parse(TableData &$data): void
     {
@@ -51,10 +48,10 @@ class ActionColumn extends DisplayColumn
         }
     }
 
-
     public function actionsLocalization(null|string|array $actionsLocalization): self
     {
         $this->actionsLocalization = $actionsLocalization;
+
         return $this;
     }
 }

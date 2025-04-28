@@ -1,5 +1,5 @@
 import qs from 'qs';
-import {router, usePage} from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 function filterKeyPrefix(data, prefix) {
     return (!prefix) ? data :
@@ -27,7 +27,7 @@ class SortParams {
                     key = key.substring(1);
                     order = 'desc';
                 }
-                return {key, order};
+                return { key, order };
             }) || [];
     }
 
@@ -142,7 +142,7 @@ class TableQueryParser {
     }
 
     _init() {
-        this.query = qs.parse(window.location.search, {ignoreQueryPrefix: true});
+        this.query = qs.parse(window.location.search, { ignoreQueryPrefix: true });
 
         const page = usePage();
 
@@ -182,7 +182,7 @@ class TableQueryParser {
         }
 
         if (this.searchParam) {
-            query[`${prefix}${this.searchParam}`] = search;
+            query[`${prefix}filter[${this.searchParam}]`] = search;
         }
 
         query[prefix + 'page'] = page || this.page;

@@ -8,11 +8,14 @@ abstract class NamedParamResource implements JsonSerializable
 {
     /**
      * Define the parameter names in order
+     *
      * @var string[]
      */
     protected static array $params = [];
+
     /**
      * Define extra parameter not in props
+     *
      * @var string[]
      */
     protected static array $extraProps = [];
@@ -22,29 +25,30 @@ abstract class NamedParamResource implements JsonSerializable
 
     /**
      * NamedParamResource constructor.
-     * @param array $props
+     *
+     * @param  array  $props
      */
-    function __construct(
+    public function __construct(
         ...$props
-    )
-    {
+    ) {
         foreach ($props as $key => $val) {
             $this->props[static::$params[$key] ?? $key] = $val;
         }
     }
 
-    function __call($name, $arguments): self
+    public function __call($name, $arguments): self
     {
         $this->$name = $arguments[0];
+
         return $this;
     }
 
-    function __get($name)
+    public function __get($name)
     {
         return $this->props[$name];
     }
 
-    function __set($name, $value)
+    public function __set($name, $value)
     {
         $this->props[$name] = $value;
     }
@@ -54,12 +58,13 @@ abstract class NamedParamResource implements JsonSerializable
         return $this->toArray();
     }
 
-    function toArray(): array
+    public function toArray(): array
     {
         $extraProps = [];
         foreach (static::$extraProps as $prop) {
             $extraProps[$prop] = $this->$prop;
         }
+
         return array_filter([...$this->props, ...$extraProps]);
     }
 }
