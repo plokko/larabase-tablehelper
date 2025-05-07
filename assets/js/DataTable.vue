@@ -1,90 +1,93 @@
 <template>
-    <v-data-table-server v-model="selected" v-model:items-per-page="itemsPerPage" v-bind="{
-        headers,
-        items,
-        sortBy,
-        itemsLength,
-        multiSort,
-        page: currentPage,
-        loading,
-        showSelect,
-        returnObject,
-        selectStrategy,
-        itemValue,
-        elevation: 2
-    }" @update:options="loadItems">
-        <template v-slot:top v-if="hasSearchBar || hasFilters">
-            <div class="align-center mx-4 ">
+    <v-card>
+        <v-data-table-server v-model="selected" v-model:items-per-page="itemsPerPage" v-bind="{
+            headers,
+            items,
+            sortBy,
+            itemsLength,
+            multiSort,
+            page: currentPage,
+            loading,
+            showSelect,
+            returnObject,
+            selectStrategy,
+            itemValue,
+            elevation: 2,
 
-                <!-- Search bar/ -->
-                <div v-if="hasSearchBar" class="datatable-search-bar d-flex justify-center align-center">
-                    <div class="flex-grow-1 flex-shrink-0">
-                        <SearchBar v-model="searchValue" :search="table?.search" />
+        }" @update:options="loadItems">
+            <template v-slot:top v-if="hasSearchBar || hasFilters">
+                <div class="align-center mx-4 ">
+
+                    <!-- Search bar/ -->
+                    <div v-if="hasSearchBar" class="datatable-search-bar d-flex justify-center align-center">
+                        <div class="flex-grow-1 flex-shrink-0">
+                            <SearchBar v-model="searchValue" :search="table?.search" />
+                        </div>
+                        <!-- Filter editor, if enabled -->
+                        <div v-if="hasFilters" class="flex-grow-0 flex-shrink-1 ml-4">
+                            <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
+                                @apply="applyFilter" />
+                        </div>
                     </div>
-                    <!-- Filter editor, if enabled -->
-                    <div v-if="hasFilters" class="flex-grow-0 flex-shrink-1 ml-4">
-                        <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
-                            @apply="applyFilter" />
+                    <!-- /Search bar -->
+                    <!-- Filters/ -->
+                    <div v-if="hasFilters" class="d-flex justify-center align-center">
+                        <!-- Filter list -->
+                        <div class="flex-grow-1 flex-shrink-0">
+
+                            <FilterChip v-for="(filter, k) of activeFilters" v-model="activeFilters[k]"
+                                @click="editFilters = true;" />
+                        </div>
+
+                        <!-- Filter editor, only if not present in search bar -->
+                        <div v-if="!hasSearchBar" class="flex-grow-0 flex-shrink-1">
+                            <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
+                                @apply="applyFilter" />
+                        </div>
                     </div>
+                    <!-- /Filters -->
                 </div>
-                <!-- /Search bar -->
-                <!-- Filters/ -->
-                <div v-if="hasFilters" class="d-flex justify-center align-center">
-                    <!-- Filter list -->
-                    <div class="flex-grow-1 flex-shrink-0">
-
-                        <FilterChip v-for="(filter, k) of activeFilters" v-model="activeFilters[k]"
-                            @click="editFilters = true;" />
-                    </div>
-
-                    <!-- Filter editor, only if not present in search bar -->
-                    <div v-if="!hasSearchBar" class="flex-grow-0 flex-shrink-1">
-                        <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
-                            @apply="applyFilter" />
-                    </div>
-                </div>
-                <!-- /Filters -->
-            </div>
-        </template>
-        <!-- Pass all slots/ -->
-        <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
-            <slot :name="slotName" v-bind="slotProps ?? {}" />
-        </template>
-        <!-- /Pass all slots -->
-        <!-- Default slots -->
-        <template v-for="(header, slotName) in itemSlots" v-slot:[slotName]="{ item }">
-            <component :is="header.component" v-if="header.component" v-bind="{
-                header,
-                item,
-                name: header.value,
-                value: item[header.value]
-            }" />
-            <template v-else-if="['boolean', 'bool'].includes(header.format)">
-                <span v-if="item[header.value] === null">-</span>
-                <v-icon v-if="item[header.value]" color="success" icon="check_circle" />
-                <v-icon v-else color="error" icon="cancel" />
             </template>
-            <template v-else-if="header.type === 'action'">
-                <ActionRow v-bind="{ value: item, header, }" />
+            <!-- Pass all slots/ -->
+            <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
+                <slot :name="slotName" v-bind="slotProps ?? {}" />
             </template>
-            <template v-else>{{ formatItem(header, item) }}</template>
-        </template>
+            <!-- /Pass all slots -->
+            <!-- Default slots -->
+            <template v-for="(header, slotName) in itemSlots" v-slot:[slotName]="{ item }">
+                <component :is="header.component" v-if="header.component" v-bind="{
+                    header,
+                    item,
+                    name: header.value,
+                    value: item[header.value]
+                }" />
+                <template v-else-if="['boolean', 'bool'].includes(header.format)">
+                    <span v-if="item[header.value] === null">-</span>
+                    <v-icon v-if="item[header.value]" color="success" icon="check_circle" />
+                    <v-icon v-else color="error" icon="cancel" />
+                </template>
+                <template v-else-if="header.type === 'action'">
+                    <ActionRow v-bind="{ value: item, header, }" />
+                </template>
+                <template v-else>{{ formatItem(header, item) }}</template>
+            </template>
 
-        <!-- custom paginator -->
-        <template v-slot:bottom>
-            <slot name="bottom" v-bind="{ page, lastPage }">
-                <div class="d-flex justify-center align-center text-center pt-2">
-                    <!-- <div>total: {{ itemsLength }}</div>-->
-                    <v-pagination v-model="page" v-bind="{
-                        length: lastPage,
-                        totalVisible: 7,
-                        //size: 'small',
-                    }" />
-                    <v-btn icon="refresh" size="small" variant="text" @click="reload" />
-                </div>
-            </slot>
-        </template>
-    </v-data-table-server>
+            <!-- custom paginator -->
+            <template v-slot:bottom>
+                <slot name="bottom" v-bind="{ page, lastPage }">
+                    <div class="d-flex justify-center align-center text-center pt-2">
+                        <!-- <div>total: {{ itemsLength }}</div>-->
+                        <v-pagination v-model="page" v-bind="{
+                            length: lastPage,
+                            totalVisible: 7,
+                            //size: 'small',
+                        }" />
+                        <v-btn icon="refresh" size="small" variant="text" @click="reload" />
+                    </div>
+                </slot>
+            </template>
+        </v-data-table-server>
+    </v-card>
 </template>
 <script>
 import { TableQueryParser } from './TableQueryParser';
