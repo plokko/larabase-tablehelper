@@ -217,6 +217,12 @@ export default {
                 this.table?.selection?.selection :
                 'id';
         },
+        allowedPageSizes() {
+            return this.parser?.allowedPageSizes;
+        },
+        itemsPerPageOptions() {
+            return this.allowedPageSizes.map(value => ({ value, title: `${value}` }));
+        }
     },
     methods: {
         setItemsPerPage(itemsPerPage) {
@@ -225,6 +231,7 @@ export default {
             this.loadItems({ page, sortBy, itemsPerPage });
         },
         loadItems({ page, itemsPerPage, sortBy }) {
+            console.warn('loaditems!', { page, itemsPerPage, sortBy })
             if (JSON.stringify(sortBy) !== JSON.stringify(this.parser.sort)
                 || page !== this.currentPage
                 || itemsPerPage !== this.perPage
@@ -234,6 +241,8 @@ export default {
                     sort: sortBy,
                     //search
                     page,
+                    //
+                    itemsPerPage,
                 });
             }
         },
@@ -269,7 +278,7 @@ export default {
             return value;
         },
         setPage(page) {
-            //console.warn('setpage', page)
+            console.warn('setpage', page)
             if (page === this.currentPage) {
                 return;
             }

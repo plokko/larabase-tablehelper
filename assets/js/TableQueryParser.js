@@ -1,6 +1,8 @@
 import qs from 'qs';
 import { router, usePage } from '@inertiajs/vue3'
 
+const page = usePage();
+
 function filterKeyPrefix(data, prefix) {
     return (!prefix) ? data :
         Object.keys(data)
@@ -79,6 +81,14 @@ class TableQueryParser {
         return this.queryData[this.searchParam];
     }
 
+    get perPage() {
+        return this.table?.per_page;
+    }
+
+    get allowedPageSizes() {
+        return this.table?.allowedPageSizes ?? [];
+    }
+
     set searchValue(search) {
         ///tbd!
         if (!this.searchParam) {
@@ -144,7 +154,6 @@ class TableQueryParser {
     _init() {
         this.query = qs.parse(window.location.search, { ignoreQueryPrefix: true });
 
-        const page = usePage();
 
         this.table = page.props[this.dataPrefix][this.name];
         this.prefix = this.table?.prefix ?? '';
@@ -160,7 +169,7 @@ class TableQueryParser {
         this.page = parseInt(this.queryData.page) || 1;
     }
 
-    _getUrlParams(filter, sort, page, search) {
+    _getUrlParams(filter, sort, page, perPage, search) {
         let query = JSON.parse(JSON.stringify(this.query));///deep clone
         const prefix = this.prefix;
 
@@ -186,6 +195,8 @@ class TableQueryParser {
         }
 
         query[prefix + 'page'] = page || this.page;
+        if (perPage)
+            query[prefix + 'perPage'] = perPage;
 
         return qs.stringify(query);
     }
@@ -195,14 +206,16 @@ class TableQueryParser {
         const sort = params && params.sort !== undefined ? params?.sort : this.sort;
         const search = params && params.search !== undefined ? params?.search : this.searchValue;
         const page = params?.page ?? this.page;
+        const perPage = params?.perPage ?? params?.itemsPerPage;
 
-        this.get(filter, sort, page, search, preserveState = true);
+        this.get(filter, sort, page, perPage, search, preserveState = true);
     }
 
-    get(filter, sort, page, search, preserveState = true) {
-        const url = location.pathname + '?' + this._getUrlParams(filter, sort, page, search);
+    get(filter, sort, page, perPage, search, preserveState = true) {
+        const url = location.pathname + '?' + this._getUrlParams(filter, sort, page, perPage, search);
         const resource = `${this.dataPrefix}.${this.name}`;
-        //console.log('tablequeryparser.get', { url,filter, sort, page,  resource });
+
+        console.log('tablequeryparser.get', { url, filter, sort, page, perPage, resource });
 
         router.visit(url, {
             only: [resource],

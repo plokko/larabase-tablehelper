@@ -11,6 +11,10 @@ use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @property-read int $pageSize
+ * @property-read int[] $allowedPageSizes
+ */
 class TableBuilder
 {
     protected string $joinChar = '.';
@@ -24,6 +28,12 @@ class TableBuilder
         'filter' => null,
     ];
 
+    /** @var int default page size for pagination */
+    protected int $pageSize = 30;
+
+    /** @var int[] User selectable page sizes */
+    protected array $allowedPageSizes = [10, 20, 30, 40];
+
     /**
      * @param  array<TableColumn>  $columns  Table column declaration
      * @param  array<bool|string|AllowedFilter>  $filters  Additional filters
@@ -36,7 +46,10 @@ class TableBuilder
         protected array $columns = [],
         protected array $filters = [],
         public ?SearchOptions $searchOptions = null
-    ) {}
+    ) {
+        $this->pageSize = config('laravel-tablehelper.page_size');
+        $this->allowedPageSizes = config('laravel-tablehelper.allowed_page_sizes');
+    }
 
     /**
      * @param  array<TableColumn>  $columns  TablcolumnDefaultsr> $filters Additional filters
@@ -253,5 +266,36 @@ class TableBuilder
         ) : null;
 
         return $this;
+    }
+
+    /**
+     * Sets the allowed and default page sizes available
+     * for pagination.
+     *
+     * @param  int  $pageSize  Default page size, ex. 30 items per page
+     * @param  ?int[]  $allowedPageSizes  Allowed page sizes that the user can choose from, should contain $pageSize, ex. [10,30,40].
+     */
+    public function setPageSize(int $pageSize, ?array $allowedPageSizes = null): self
+    {
+        $this->pageSize = $pageSize;
+        if ($this->allowedPageSizes) {
+            $this->allowedPageSizes = $allowedPageSizes;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Magic getter for read-only props.
+     */
+    public function __get($k)
+    {
+        switch ($k) {
+            case 'pageSize':
+            case 'allowedPageSizes':
+                return $this->$k;
+            default:
+                break;
+        }
     }
 }

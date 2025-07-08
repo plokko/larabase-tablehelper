@@ -33,11 +33,19 @@ class TableData
 
     public function getData(): array
     {
+        $pageSize = $this->table->pageSize;
+        $allowedPageSizes = $this->table->allowedPageSizes;
+
+        //change page size on user input
+        $perPage = $this->request->input('perPage');
+        if (in_array($perPage, $allowedPageSizes)) {
+            $pageSize = $perPage;
+        }
 
         $result = $this->builder
             ->allowedFilters($this->filter)
             ->allowedSorts($this->sort)
-            ->paginate();
+            ->paginate($pageSize);
 
         $resource = call_user_func([($this->table->resource ?: JsonResource::class), 'collection'], $result->items());
 
@@ -58,6 +66,8 @@ class TableData
             'last_page' => $result->lastPage(),
             'per_page' => $result->perPage(),
             'total' => $result->total(),
+            //
+            'allowedPageSizes' => $allowedPageSizes,
         ];
 
         return $data;
