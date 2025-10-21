@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Plokko\LaravelTableHelper\Columns\FieldColumn;
+use Plokko\LaravelTableHelper\Enums\SelectionStrategy;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -27,6 +28,8 @@ class TableBuilder
         'sort' => null,
         'filter' => null,
     ];
+
+    protected ?array $selectionOptions = null;
 
     /** @var int default page size for pagination */
     protected int $pageSize = 30;
@@ -171,6 +174,7 @@ class TableBuilder
             builder: $builder,
             filter: $this->filters,
             defaultSorts: $this->defaultSorts,
+            selectionOptions: $this->selectionOptions,
         );
 
         /**
@@ -297,5 +301,25 @@ class TableBuilder
             default:
                 break;
         }
+    }
+
+    public function selection(
+        bool $show = true,
+        SelectionStrategy $strategy = SelectionStrategy::page,
+        string $itemKey = 'id',
+        bool $returnObject = true,
+    ): self {
+        $this->selectionOptions = $show ? [
+            'strategy' => $strategy,
+            'itemKey' => $itemKey,
+            'returnObject' => $returnObject,
+        ] : null;
+
+        return $this;
+    }
+
+    public function getSelection()
+    {
+        return []; ///TODO!
     }
 }

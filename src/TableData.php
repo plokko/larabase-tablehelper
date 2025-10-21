@@ -19,6 +19,7 @@ class TableData
         public array $filter = [],
         public array $sort = [],
         protected null|AllowedSort|array|string $defaultSorts = null,
+        protected ?array $selectionOptions = null,
     ) {
 
         if ($this->defaultSorts !== null) {
@@ -68,6 +69,9 @@ class TableData
             'total' => $result->total(),
             //
             'allowedPageSizes' => $allowedPageSizes,
+
+            /// Selection
+            'selection' => $this->selectionOptions,
         ];
 
         return $data;
