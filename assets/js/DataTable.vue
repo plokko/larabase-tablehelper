@@ -89,7 +89,7 @@
                 </template>
             </v-data-table-server>
         </v-card-text>
-        <slot name="card-footer">!!!</slot>
+        <slot name="card-footer"></slot>
     </v-card>
 </template>
 <script>
