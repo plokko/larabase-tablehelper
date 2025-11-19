@@ -14,7 +14,7 @@
                 selectStrategy,
                 itemValue,
                 elevation: 2,
-
+                rowProps,
             }" @update:options="loadItems">
                 <template v-slot:top v-if="hasSearchBar || hasFilters">
                     <div class="align-center mx-4 ">
@@ -113,7 +113,7 @@ export default {
 
         showSearch: { type: Boolean, default: true },
         showFilters: { type: Boolean, default: true },
-
+        rowProps:{},
         title: {},
     },
     data() {
