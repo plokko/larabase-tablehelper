@@ -15,7 +15,7 @@
                 itemValue,
                 elevation: 2,
                 rowProps,
-            }" @update:options="loadItems" @click:row="v => $emit('click:row', v)" >
+            }" @update:options="loadItems" @click:row="(e, v) => $emit('click:row', v)">
                 <template v-slot:top v-if="hasSearchBar || hasFilters">
                     <div class="align-center mx-4 ">
 
@@ -113,7 +113,7 @@ export default {
 
         showSearch: { type: Boolean, default: true },
         showFilters: { type: Boolean, default: true },
-        rowProps:{},
+        rowProps: {},
         title: {},
     },
     data() {
