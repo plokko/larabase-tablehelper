@@ -15,7 +15,7 @@
                 itemValue,
                 elevation: 2,
                 rowProps,
-            }" @update:options="loadItems">
+            }" @update:options="loadItems" @click:row="v => $emit('click:row', v)" >
                 <template v-slot:top v-if="hasSearchBar || hasFilters">
                     <div class="align-center mx-4 ">
 
