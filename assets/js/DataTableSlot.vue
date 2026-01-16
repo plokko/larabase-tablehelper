@@ -4,6 +4,15 @@
             page,
             itemsPerPage,
             itemsTotal,
+            filter,
+            filters,
+            activeFilters,
+            search: searchValue,
+            availableFilters,
+            // Apply changes to params
+            apply,
+            // Reload resetting filters
+            reset,
         }">
 
         </slot>
@@ -11,10 +20,6 @@
 </template>
 <script>
 import { TableQueryParser } from './TableQueryParser';
-import ActionRow from './DataTable/ActionRow.vue';
-import SearchBar from './DataTable/SearchBar.vue';
-import FilterChip from './DataTable/FilterChip.vue';
-import FiltersEditor from './DataTable/FiltersEditor.vue';
 
 function equals(a, b) {
     return JSON.stringify(a) === JSON.stringify(b);
@@ -24,6 +29,7 @@ export default {
     events: ['update:modelValue'],
     props: {
         name: { type: String, required: false },
+        preserveState: { type: Boolean, default: false, },
     },
     data() {
         const parser = new TableQueryParser(this.name, {
@@ -69,6 +75,19 @@ export default {
         items() {
             return this.table?.data || [];
         },
+
+        filter: {
+            get() {
+                return this.filters.reduce((acc, item) => {
+                    acc[item.name] = item
+                    return acc
+                }, {})
+            },
+            set(newObject) {
+                console.warn('set filter', newObject)
+                this.filters.value = Object.values(newObject)
+            }
+        },
         filters: {
             get() {
                 return this.parser.filters;
@@ -79,6 +98,9 @@ export default {
         },
         activeFilters() {
             return this.parser.activeFilters;
+        },
+        availableFilters() {
+            return this.parser.availableFilters;
         },
         sortBy() {
             return this.parser.sort;
@@ -176,13 +198,11 @@ export default {
             const sortBy = this.parser.sort;
             this.loadItems({ page, sortBy, itemsPerPage });
         },
-        reload() {
-            this.parser.reload();
+        reset() {
+            this.$nextTick(() => this.parser.reload());
         },
-
-        applyFilter(filters) {
-            this.filters = filters;
-            //this.$emit('update:filters', filters);
+        apply() {
+            this.$nextTick(() => this.parser.reloadWith({}, this.preserveState));
         },
     },
     watch: {
@@ -197,11 +217,5 @@ export default {
             }
         },
     },
-    components: {
-        ActionRow,
-        SearchBar,
-        FilterChip,
-        FiltersEditor,
-    }
 }
 </script>

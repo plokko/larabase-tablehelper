@@ -1,5 +1,6 @@
 import qs from 'qs';
 import { router, usePage } from '@inertiajs/vue3'
+import { watch, ref, computed } from 'vue';
 
 const page = usePage();
 
@@ -116,17 +117,35 @@ class TableQueryParser {
     }
 
     get filters() {
-        return this.headers
-            .filter(h => h.filterable)
-            .map(h => ({
-                name: h.name,
-                label: h.title,
-                value: this.filter[h.name] ?? null,
+        const headerFilters = {};
+        for (const h of this.headers) {
+            if (h.filterable) {
+                headerFilters[h.name] = h;
+            }
+        }
+
+        const filters = this.availableFilters
+            .map(name => ({
+                name,
+                type: headerFilters[name] ? 'header' : 'custom',
+                label: headerFilters[name]?.title,
+                value: this.filter[name] ?? null,
             }));
+
+        watch(ref(filters),
+            (newValue, oldValue) => {
+                for (const e of newValue) {
+                    this.filter[e.name] = e.value
+                }
+            },
+            { deep: true });
+
+        return filters;
 
     }
 
     set filters(filters) {
+        /***TBD */
         const filter = {};
         for (const h of filters) {
             if (h.value) {
@@ -134,12 +153,9 @@ class TableQueryParser {
             }
         }
 
-        this.reloadWith({
-            filter,
-            page: 1,// Reset page
-        });
-        //alert(JSON.stringify(filter, null, 2));
     }
+
+
 
     get activeFilters() {
         return this.headers.filter(h => h.filterable && this.filter[h.name])
@@ -155,14 +171,34 @@ class TableQueryParser {
         this.query = qs.parse(window.location.search, { ignoreQueryPrefix: true });
 
 
-        this.table = page.props[this.dataPrefix][this.name];
+
+        /// update on change
+        watch(
+            () => JSON.stringify(page.props[this.dataPrefix]?.[this.name]),
+            () => {
+                this.table = page.props[this.dataPrefix]?.[this.name] ?? {};
+            },
+            {
+                immediate: true,
+            }
+        );
         this.prefix = this.table?.prefix ?? '';
 
+        this.availableFilters = this.table?.available_filters ?? [];
+
         this.queryData = filterKeyPrefix(this.query, this.prefix);
+
+
 
         //console.warn('QUERYDATA:::', this.queryData);
 
         this.filter = this.queryData[this.filterKey] || {}
+
+        this.filter = Object.assign(Object.fromEntries(
+            this.availableFilters.map(key => [key, null])
+        ), this.filter);
+
+
 
         this.sort = SortParams.parse(this.table?.order_by ?? this.queryData[this.sortKey]);
 
@@ -201,21 +237,27 @@ class TableQueryParser {
         return qs.stringify(query);
     }
 
-    reloadWith(params, preserveState = true) {
+    reloadWith(params, preserveState = false) {
         const filter = params && params?.filter !== undefined ? params?.filter : this.filter;
         const sort = params && params.sort !== undefined ? params?.sort : this.sort;
         const search = params && params.search !== undefined ? params?.search : this.searchValue;
         const page = params?.page ?? this.page;
         const perPage = params?.perPage ?? params?.itemsPerPage;
 
-        this.get(filter, sort, page, perPage, search, preserveState = true);
+
+        console.warn('RELOADWITH', filter)
+
+        this.get(filter, sort, page, perPage, search, preserveState);
     }
 
-    get(filter, sort, page, perPage, search, preserveState = true) {
+    get(filter, sort, page, perPage, search, preserveState = false) {
+        filter = Object.fromEntries(Object.entries(filter).filter(([_, value]) => value !== null && value !== ""));
+
+        console.warn('GETTING DATA FILTER', JSON.stringify(filter));
         const url = location.pathname + '?' + this._getUrlParams(filter, sort, page, perPage, search);
         const resource = `${this.dataPrefix}.${this.name}`;
 
-        console.log('tablequeryparser.get', { url, filter, sort, page, perPage, resource });
+        console.log('tablequeryparser.get', { url, filter: JSON.stringify(filter), sort, page, perPage, resource });
 
         router.visit(url, {
             only: [resource],

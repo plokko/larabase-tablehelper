@@ -158,7 +158,7 @@ export default {
             return (this.parser?.headers || []).map(h => Object.assign({ title: h.name, value: h.name }, h));
         },
         items() {
-            return this.table?.data || [];
+            return this.parser.data;
         },
         filters: {
             get() {

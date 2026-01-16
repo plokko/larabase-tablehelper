@@ -52,6 +52,7 @@ class TableData
 
         $orderBy = $this->getSortParams();
 
+        $available_filters = array_map(fn($f) => $f->getName(), $this->filter);
         /** @var AnonymousResourceCollection $resource */
         $data = [
             'data' => $resource->toArray($this->request),
@@ -72,6 +73,8 @@ class TableData
 
             /// Selection
             'selection' => $this->selectionOptions,
+
+            'available_filters' => $available_filters,
         ];
 
         return $data;
