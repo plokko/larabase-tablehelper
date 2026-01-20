@@ -262,6 +262,7 @@ class TableQueryParser {
         router.visit(url, {
             only: [resource],
             preserveState,
+            preserveScroll: true,
 
             onStart: visit => {
                 this.loading = true;
