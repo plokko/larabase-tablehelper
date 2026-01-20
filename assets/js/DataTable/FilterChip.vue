@@ -8,7 +8,8 @@
         loading,
         //color: 'secondary',
     }" @click="onClick">
-        <strong>{{ title }}:</strong> {{ value }}
+        <strong class="mr-1">{{ title }}:</strong>
+        {{ text }}
     </v-chip>
 </template>
 <script>
@@ -30,6 +31,13 @@ export default {
         },
         value() {
             return this.modelValue?.value;
+        },
+        text() {
+            if (
+                Array.isArray(this.value)) {
+                return this.value.join(', ')
+            }
+            return this.value;
         },
     },
     methods: {

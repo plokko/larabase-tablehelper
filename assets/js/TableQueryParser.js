@@ -79,7 +79,7 @@ class TableQueryParser {
     }
 
     get searchValue() {
-        return this.queryData[this.searchParam];
+        return this.filter[this.searchParam];
     }
 
     get perPage() {
