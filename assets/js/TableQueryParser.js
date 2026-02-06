@@ -1,8 +1,6 @@
 import qs from 'qs';
 import { router, usePage } from '@inertiajs/vue3'
-import { watch, ref, computed } from 'vue';
-
-const page = usePage();
+import { watch, ref } from 'vue';
 
 function filterKeyPrefix(data, prefix) {
     return (!prefix) ? data :
@@ -60,6 +58,10 @@ class TableQueryParser {
         this.sortKey = opt?.parameters?.sort ?? 'sort';
 
         this._init();
+    }
+
+    get table() {
+        return usePage().props[this.dataPrefix]?.[this.name] ?? {};
     }
 
     get data() {
@@ -172,7 +174,7 @@ class TableQueryParser {
 
 
 
-        /// update on change
+        /*// update on change
         watch(
             () => JSON.stringify(page.props[this.dataPrefix]?.[this.name]),
             () => {
@@ -182,6 +184,7 @@ class TableQueryParser {
                 immediate: true,
             }
         );
+        //*/
         this.prefix = this.table?.prefix ?? '';
 
         this.availableFilters = this.table?.available_filters ?? [];
@@ -237,7 +240,7 @@ class TableQueryParser {
         return qs.stringify(query);
     }
 
-    reloadWith(params, preserveState = false) {
+    reloadWith(params, preserveState = true) {
         const filter = params && params?.filter !== undefined ? params?.filter : this.filter;
         const sort = params && params.sort !== undefined ? params?.sort : this.sort;
         const search = params && params.search !== undefined ? params?.search : this.searchValue;
@@ -250,7 +253,7 @@ class TableQueryParser {
         this.get(filter, sort, page, perPage, search, preserveState);
     }
 
-    get(filter, sort, page, perPage, search, preserveState = false) {
+    get(filter, sort, page, perPage, search, preserveState = true) {
         filter = Object.fromEntries(Object.entries(filter).filter(([_, value]) => value !== null && value !== ""));
 
         console.warn('GETTING DATA FILTER', JSON.stringify(filter));

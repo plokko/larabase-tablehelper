@@ -29,7 +29,7 @@ export default {
     events: ['update:modelValue'],
     props: {
         name: { type: String, required: false },
-        preserveState: { type: Boolean, default: false, },
+        preserveState: { type: Boolean, default: true, },
     },
     data() {
         const parser = new TableQueryParser(this.name, {
