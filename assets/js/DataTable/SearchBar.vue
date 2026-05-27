@@ -4,8 +4,9 @@
         label: 'Ricerca',
         clearable: true,
         variant: 'underlined',
-        
+        hideDetails: true,
         singleLine: true,
+        loading,
     }">
         <template v-if="hasOptions" v-slot:append-inner="slots">
             <v-menu v-bind="{
@@ -41,6 +42,14 @@
             </v-menu>
 
         </template>
+        <template #append>
+            <VBtn v-bind="{
+                icon: 'send',
+                variant: 'text',
+                density: 'compact',
+                color: 'primary',
+            }" @click="sendImmediate" />
+        </template>
 
     </v-text-field>
 </template>
@@ -53,8 +62,9 @@ export default {
     emits: ['update:modelValue'],
     props: {
         modelValue: { required: false },
+        loading: { type: Boolean, required: false },
         search: { type: Object, required: true, default: () => ({}) },
-        debounce: { type: Number, default: 300 },
+        debounce: { type: Number, default: 800 },
     },
     data() {
 
@@ -86,6 +96,10 @@ export default {
             this.debounced = _.debounce(() => {
                 this.$emit('update:modelValue', this.val);
             }, this.debounce);
+        },
+        sendImmediate() {
+            this.debounced?.cancel();
+            this.$emit('update:modelValue', this.val);
         }
     },
     watch: {
