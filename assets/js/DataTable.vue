@@ -17,7 +17,7 @@ const props = defineProps({
     modelValue: {type: Array, default: () => []},
 
     showSearch: {type: Boolean, default: true},
-    showFilters: {type: Boolean, default: true},
+    showFilters: {type: Boolean, default: false},
     rowProps: {},
     title: {},
 });
