@@ -1,6 +1,6 @@
 import qs from 'qs';
-import { router, usePage } from '@inertiajs/vue3'
-import { watch, ref } from 'vue';
+import {router, usePage} from '@inertiajs/vue3'
+import {watch, ref} from 'vue';
 
 function filterKeyPrefix(data, prefix) {
     return (!prefix) ? data :
@@ -28,7 +28,7 @@ class SortParams {
                     key = key.substring(1);
                     order = 'desc';
                 }
-                return { key, order };
+                return {key, order};
             }) || [];
     }
 
@@ -95,10 +95,10 @@ class TableQueryParser {
     set searchValue(search) {
         ///tbd!
         if (!this.searchParam) {
-            console.warn('Cannot search with an empty search param')
+            //console.warn('Cannot search with an empty search param')
             return;
         }
-        console.warn(`Serching by ${search}`)
+        //console.warn(`Serching by ${search}`)
         this.reloadWith({
             page: 1,
             search,
@@ -140,7 +140,7 @@ class TableQueryParser {
                     this.filter[e.name] = e.value
                 }
             },
-            { deep: true });
+            {deep: true});
 
         return filters;
 
@@ -158,7 +158,6 @@ class TableQueryParser {
     }
 
 
-
     get activeFilters() {
         return this.headers.filter(h => h.filterable && this.filter[h.name])
             .map(h => ({
@@ -170,8 +169,7 @@ class TableQueryParser {
     }
 
     _init() {
-        this.query = qs.parse(window.location.search, { ignoreQueryPrefix: true });
-
+        this.query = qs.parse(window.location.search, {ignoreQueryPrefix: true});
 
 
         /*// update on change
@@ -192,7 +190,6 @@ class TableQueryParser {
         this.queryData = filterKeyPrefix(this.query, this.prefix);
 
 
-
         //console.warn('QUERYDATA:::', this.queryData);
 
         this.filter = this.queryData[this.filterKey] || {}
@@ -200,7 +197,6 @@ class TableQueryParser {
         this.filter = Object.assign(Object.fromEntries(
             this.availableFilters.map(key => [key, null])
         ), this.filter);
-
 
 
         this.sort = SortParams.parse(this.table?.order_by ?? this.queryData[this.sortKey]);
@@ -248,7 +244,7 @@ class TableQueryParser {
         const perPage = params?.perPage ?? params?.itemsPerPage;
 
 
-        console.warn('RELOADWITH', filter)
+        //console.warn('RELOADWITH', filter)
 
         this.get(filter, sort, page, perPage, search, preserveState);
     }
@@ -256,11 +252,11 @@ class TableQueryParser {
     get(filter, sort, page, perPage, search, preserveState = true) {
         filter = Object.fromEntries(Object.entries(filter).filter(([_, value]) => value !== null && value !== ""));
 
-        console.warn('GETTING DATA FILTER', JSON.stringify(filter));
+        //console.warn('GETTING DATA FILTER', JSON.stringify(filter));
         const url = location.pathname + '?' + this._getUrlParams(filter, sort, page, perPage, search);
         const resource = `${this.dataPrefix}.${this.name}`;
 
-        console.log('tablequeryparser.get', { url, filter: JSON.stringify(filter), sort, page, perPage, resource });
+        //console.log('tablequeryparser.get', {url, filter: JSON.stringify(filter), sort, page, perPage, resource});
 
         router.visit(url, {
             only: [resource],

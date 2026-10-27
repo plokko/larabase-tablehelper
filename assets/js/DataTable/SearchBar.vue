@@ -1,115 +1,146 @@
+<script setup>
+import {onBeforeUnmount, ref, watch, computed} from 'vue';
+import debounceFn from 'lodash/debounce';
+
+const props = defineProps({
+    label: {default: 'Ricerca'},
+    prependIcon: {default: 'search'},
+    variant: {default: 'underlined'},
+    modelValue: {required: false},
+    loading: {type: Boolean, default: false},
+    search: {type: Object, required: true, default: () => ({})},
+    debounce: {type: Number, default: 500},
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const val = ref(props.modelValue);
+const selectedOptions = ref([]);
+
+const options = computed(() => props.search?.options ?? []);
+const hasOptions = computed(() => options.value.length > 0);
+
+function emitValue() {
+    emit('update:modelValue', val.value);
+}
+
+let debouncedEmit = debounceFn(emitValue, props.debounce);
+
+const model = computed({
+    get: () => val.value,
+    set: (value) => {
+        if (val.value === value) return;
+        val.value = value;
+        debouncedEmit();
+    },
+});
+
+function sendImmediate() {
+    debouncedEmit.cancel();
+    emitValue();
+}
+
+watch(
+    () => props.modelValue,
+    (value) => {
+        if (val.value !== value && !debouncedEmit.pending?.()) {
+            val.value = value;
+        }
+    },
+);
+
+watch(
+    () => props.debounce,
+    (value) => {
+        debouncedEmit.cancel();
+        debouncedEmit = debounceFn(emitValue, value);
+    },
+);
+
+onBeforeUnmount(() => {
+    debouncedEmit.cancel();
+});
+</script>
 <template>
-    <v-text-field v-model="model" v-bind="{
-        prependIcon: 'search',
-        label: 'Ricerca',
-        clearable: true,
-        variant: 'underlined',
-        hideDetails: true,
-        singleLine: true,
-        loading,
-    }">
-        <template v-if="hasOptions" v-slot:append-inner="slots">
-            <v-menu v-bind="{
-                closeOnContentClick: false,
-                location: 'end',
-            }">
-                <template v-slot:activator="{ props }">
-                    <v-btn icon="filter_list" variant="text" v-bind="props" />
+    <v-text-field
+        v-model="model"
+        v-bind="{
+            prependIcon ,
+            label,
+            clearable: true,
+            variant,
+            hideDetails: 'auto',
+            singleLine: true,
+            loading,
+            density: 'compact'
+        }"
+    >
+        <template v-if="hasOptions" #append-inner>
+            <v-menu
+                v-bind="{
+                    closeOnContentClick: false,
+                    location: 'end',
+                }"
+            >
+                <template #activator="{ props: activatorProps }">
+                    <v-btn
+                        v-bind="{
+                            icon: 'filter_list',
+                            variant: 'text',
+                            ...activatorProps,
+                        }"
+                    />
                 </template>
-                <v-card min-width="300" prepend-icon="filter_list" title="Filtra per">
-                    <v-divider />
-                    <v-list v-model:selected="selectedOptions" v-bind="{
-                        density: 'compact',
-                        selectStrategy: 'leaf',
-                        slim: true,
-                    }" style="max-height: 200px;">
-                        <template v-for="option in options">
-                            <v-list-item v-bind="{
-                                title: option,
-                                key: option,
-                                value: option,
-                            }">
-                                <template v-slot:prepend="{ isSelected }">
+
+                <v-card
+                    min-width="300"
+                    prepend-icon="filter_list"
+                    title="Filtra per"
+                >
+                    <v-divider/>
+
+                    <v-list
+                        v-model:selected="selectedOptions"
+                        v-bind="{
+                            density: 'compact',
+                            selectStrategy: 'leaf',
+                            slim: true,
+                        }"
+                        style="max-height: 200px; overflow-y: auto"
+                    >
+                        <template
+                            v-for="option in options"
+                            :key="option"
+                        >
+                            <v-list-item
+                                :title="option"
+                                :value="option"
+                            >
+                                <template #prepend="{ isSelected }">
                                     <v-list-item-action start>
-                                        <v-checkbox-btn :model-value="isSelected" />
+                                        <v-checkbox-btn
+                                            :model-value="isSelected"
+                                        />
                                     </v-list-item-action>
                                 </template>
                             </v-list-item>
-                            <v-divider />
+
+                            <v-divider/>
                         </template>
                     </v-list>
                 </v-card>
             </v-menu>
-
         </template>
         <template #append>
-            <VBtn v-bind="{
-                icon: 'send',
-                variant: 'text',
-                density: 'compact',
-                color: 'primary',
-            }" @click="sendImmediate" />
+            <v-btn
+                v-bind="{
+                    icon: 'send',
+                    variant: 'text',
+                    density: 'compact',
+                    color: 'primary',
+                }"
+                @click="sendImmediate"
+            />
         </template>
-
     </v-text-field>
 </template>
-
-<script>
-import _ from 'lodash';
-import { size } from 'lodash';
-
-export default {
-    emits: ['update:modelValue'],
-    props: {
-        modelValue: { required: false },
-        loading: { type: Boolean, required: false },
-        search: { type: Object, required: true, default: () => ({}) },
-        debounce: { type: Number, default: 800 },
-    },
-    data() {
-
-        return {
-            val: this.modelValue,
-            selectedOptions: []
-        };
-    },
-    computed: {
-        options() { return this.search?.options },
-        hasOptions() { return false },//TODO: !!this.options
-        model: {
-            get() { return this.val },
-            set(v) {
-                if (this.val !== v) {
-                    this.val = v;
-                    this.debounced();
-                }
-            }
-        }
-    },
-    mounted() {
-        this.updateDebounce();
-    },
-    methods: {
-        updateDebounce() {
-            // Updates debounce value
-            this.debounced?.cancel();
-            this.debounced = _.debounce(() => {
-                this.$emit('update:modelValue', this.val);
-            }, this.debounce);
-        },
-        sendImmediate() {
-            this.debounced?.cancel();
-            this.$emit('update:modelValue', this.val);
-        }
-    },
-    watch: {
-        modelValue() {
-            this.val = this.modelValue;
-            this.updateDebounce();
-        },
-        debounce() {
-            this.updateDebounce();
-        },
-    }
-}
-</script>

@@ -1,183 +1,222 @@
+<script setup>
+import {computed, ref, watch} from 'vue';
+
+const props = defineProps({
+    modelValue: {
+        type: Boolean,
+        default: false,
+    },
+    filters: {
+        type: Array,
+        required: true,
+    },
+    activeFilters: {
+        type: Array,
+        required: true,
+    },
+    loading: {
+        type: Boolean,
+        default: false,
+    },
+});
+
+const emit = defineEmits([
+    'update:modelValue',
+    'apply',
+]);
+
+const headers = [
+    {
+        key: 'label',
+        title: 'Campo',
+    },
+    {
+        key: 'filter',
+        title: 'filtro',
+        sortable: false,
+        filterable: false,
+        width: 100,
+    },
+    {
+        key: 'value',
+        title: 'Valore',
+        sortable: false,
+        filterable: false,
+    },
+];
+
+const items = ref(
+    JSON.parse(JSON.stringify(props.activeFilters))
+);
+
+const addFilter = ref(null);
+
+const model = computed({
+    get: () => props.modelValue,
+    set: value => emit('update:modelValue', value),
+});
+
+const selectedFilterNames = computed(() =>
+    items.value.map(item => item.name)
+);
+
+const addableFilters = computed(() =>
+    props.filters
+        .filter(filter => !selectedFilterNames.value.includes(filter.name))
+        .map(filter => ({
+            value: filter,
+            title: filter.label ?? filter.name,
+        }))
+);
+
+const canAddFilters = computed(() =>
+    addableFilters.value.length > 0
+);
+
+function close() {
+    model.value = false;
+}
+
+function apply() {
+    emit('apply', items.value);
+    close();
+}
+
+function deleteRow(item) {
+    const index = items.value.indexOf(item);
+
+    if (index !== -1) {
+        items.value.splice(index, 1);
+    }
+}
+
+watch(addFilter, value => {
+    if (value) {
+        items.value.push(value);
+        addFilter.value = null;
+    }
+});
+</script>
 <template>
-
-    <v-dialog v-model="model" v-bind="{
-        width: 700,
-        persistent: true,
-        scrollable: true,
-    }">
-        <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-bind="{
-                icon: 'filter_alt',
-                text: 'Filtri',
-                density: 'comfortable',
-                variant: 'outlined',
-                ...activatorProps,
-            }" />
+    <v-dialog
+        v-model="model"
+        :width="700"
+        persistent
+        scrollable
+    >
+        <template #activator="{ props: activatorProps }">
+            <v-btn
+                v-bind="{
+                    icon: 'filter_alt',
+                    text: 'Filtri',
+                    density: 'compact',
+                    variant: 'outlined',
+                    ...activatorProps,
+                }"
+            />
         </template>
-        <v-card v-bind="{
-            title: 'Gestisci filtri',
-            loading,
 
-
-            prependIcon: 'filter_alt',
-            //color: 'orange',
-        }">
-            <template v-slot:append>
-                <v-btn variant="text" icon="close" size="small" @click="close" />
-            </template>
-            <v-data-table v-bind="{
-                items,
-                headers,
+        <v-card
+            v-bind="{
+                title: 'Gestisci filtri',
                 loading,
-                itemsPerPage: -1,
-                hideDefaultFooter: true,
-                fixedFooter: true,
-                fixedHeader: true,
-            }">
+                prependIcon: 'filter_alt',
+            }"
+        >
+            <template #append>
+                <v-btn
+                    variant="text"
+                    icon="close"
+                    size="small"
+                    @click="close"
+                />
+            </template>
 
-                <template v-slot:item.label="{ item }">
-                    <strong>{{ item.title ?? item.label ?? item.name }}</strong>
+            <v-data-table
+                v-bind="{
+                    items,
+                    headers,
+                    loading,
+                    itemsPerPage: -1,
+                    hideDefaultFooter: true,
+                    fixedFooter: true,
+                    fixedHeader: true,
+                }"
+            >
+                <template #item.label="{ item }">
+                    <strong>
+                        {{ item.title ?? item.label ?? item.name }}
+                    </strong>
                 </template>
-                <template v-slot:item.filter="{ item }">
-                    <span class="font-italic font-weight-medium ">Contiene</span>
+
+                <template #item.filter>
+                    <span class="font-italic font-weight-medium">
+                        Contiene
+                    </span>
                 </template>
-                <template v-slot:item.value="{ item }">
 
-                    <v-text-field v-model="item.value" v-bind="{
-                        loading,
-                        //label: title,
-                        clearable: true,
-                        density: 'compact',
-                        //prependIcon: 'filter_alt',
-                        variant: 'outlined',
-
-                    }">
-                        <template v-slot:append>
-                            <v-btn v-bind="{ icon: 'delete', color: 'error', density: 'compact', variant: 'text' }"
-                                @click="deleteRow(item)" />
+                <template #item.value="{ item }">
+                    <v-text-field
+                        v-model="item.value"
+                        v-bind="{
+                            loading,
+                            clearable: true,
+                            density: 'compact',
+                            variant: 'outlined',
+                        }"
+                    >
+                        <template #append>
+                            <v-btn
+                                v-bind="{
+                                    icon: 'delete',
+                                    color: 'error',
+                                    density: 'compact',
+                                    variant: 'text',
+                                }"
+                                @click="deleteRow(item)"
+                            />
                         </template>
                     </v-text-field>
                 </template>
 
-                <template v-if="canAddFilters" v-slot:tfoot="{ }">
+                <template v-if="canAddFilters" #tfoot>
                     <tr>
                         <td colspan="3" class="px-2">
-                            <v-autocomplete v-model="addFilter" v-bind="{
-                                items: addableFilters,
-                                prependIcon: 'playlist_add',
-                                loading,
-                                //label: title,
-                                density: 'compact',
-                                //prependIcon: 'filter_alt',
-                                variant: 'outlined',
-
-                            }" />
+                            <v-autocomplete
+                                v-model="addFilter"
+                                v-bind="{
+                                    items: addableFilters,
+                                    prependIcon: 'playlist_add',
+                                    loading,
+                                    density: 'compact',
+                                    variant: 'outlined',
+                                }"
+                            />
                         </td>
                     </tr>
                 </template>
             </v-data-table>
-            <v-card-actions>
-                <v-btn v-bind="{
-                    prependIcon: 'close',
-                    text: trans('common.cancel'),
-                }" @click="close" />
-                <v-spacer />
-                <v-btn v-bind="{
-                    color: 'primary',
-                    prependIcon: 'save',
-                    text: trans('common.save'),
-                }" @click="apply" />
 
+            <v-card-actions>
+                <v-btn
+                    v-bind="{
+                        prependIcon: 'close',
+                        text: trans('common.cancel'),
+                    }"
+                    @click="close"
+                />
+
+                <v-spacer/>
+
+                <v-btn
+                    v-bind="{
+                        color: 'primary',
+                        prependIcon: 'save',
+                        text: trans('common.save'),
+                    }"
+                    @click="apply"
+                />
             </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
-
-<script>
-import { h } from 'vue';
-
-export default {
-    emits: ['update:modelValue'],
-    props: {
-        modelValue: { default: false },
-        filters: { type: Array, required: true, },
-        activeFilters: { type: Array, required: true, },
-        loading: { default: false },
-    },
-    data() {
-        const headers = [
-            {
-                key: 'label',
-                title: 'Campo',
-            },
-            {
-                key: 'filter',
-                title: 'filtro',
-                sortable: false,
-                filterable: false,
-                width: 100,
-            },
-            {
-                key: 'value',
-                title: 'Valore',
-                sortable: false,
-                filterable: false,
-            },
-
-        ];
-
-        const items = JSON.parse(JSON.stringify(this.activeFilters));
-
-        return {
-            headers,
-            items,
-            addFilter: null,
-        };
-    },
-    computed: {
-        model: {
-            get() { return this.modelValue; },
-            set(v) { this.$emit('update:modelValue', v); }
-        },
-        selectedFilterNames() {
-            return this.items.map(h => h.name);
-        },
-        addableFilters() {
-            //todo: filter only non selected
-            return this.filters
-                .filter(h => !this.selectedFilterNames.includes(h.name))
-                .map(h => ({
-                    value: h,
-                    title: h.label ?? h.name,
-                }));
-        },
-        canAddFilters() {
-            return this.addableFilters.length > 0;
-        },
-    },
-    methods: {
-        close() {
-            this.model = false;
-        },
-        apply() {
-            this.$emit('apply', this.items);
-            //TODO!
-            this.close();
-        },
-        deleteRow(item) {
-            const index = this.items.indexOf(item);
-            if (index !== -1) {
-                this.items.splice(index, 1);
-            }
-        }
-    },
-    watch: {
-        addFilter(v) {
-            if (v) {
-                this.items.push(v);
-                this.addFilter = null;
-            }
-        }
-    }
-}
-</script>
