@@ -155,6 +155,8 @@ class TableQueryParser {
             }
         }
 
+        console.warn('>>>SET FILTERS', filters)
+
     }
 
 

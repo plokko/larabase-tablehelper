@@ -17,7 +17,7 @@ const props = defineProps({
     modelValue: {type: Array, default: () => []},
 
     showSearch: {type: Boolean, default: true},
-    showFilters: {type: Boolean, default: false},
+    showFilters: {type: Boolean, default: true},
     rowProps: {},
     title: {},
 });
@@ -165,6 +165,7 @@ function reload() {
 }
 
 function applyFilter(value) {
+    console.warn('applyFilter', value)
     filters.value = value;
 }
 
@@ -219,11 +220,9 @@ watch(selected, value => {
                     <div v-if="hasFilters" class="d-flex justify-center align-center">
                         <!-- Filter list -->
                         <div class="flex-grow-1 flex-shrink-0">
-
                             <FilterChip v-for="(filter, k) of activeFilters" v-model="activeFilters[k]"
                                         @click="editFilters = true;"/>
                         </div>
-
                         <!-- Filter editor, only if not present in search bar -->
                         <div v-if="!hasSearchBar" class="flex-grow-0 flex-shrink-1">
                             <FiltersEditor v-model="editFilters" v-bind="{ filters, activeFilters, loading }"
@@ -256,7 +255,6 @@ watch(selected, value => {
                 </template>
                 <template v-else>{{ formatItem(header, item) }}</template>
             </template>
-
             <!-- custom paginator -->
             <template v-slot:bottom>
                 <slot name="bottom" v-bind="{ page, lastPage }">

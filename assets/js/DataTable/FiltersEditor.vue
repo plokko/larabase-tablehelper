@@ -45,8 +45,13 @@ const headers = [
     },
 ];
 
-const items = ref(
-    JSON.parse(JSON.stringify(props.activeFilters))
+const items = ref([]);
+watch(
+    () => props.activeFilters,
+    (newData) => {
+        items.value = JSON.parse(JSON.stringify(props.activeFilters));
+    },
+    {immediate: true, deep: true}
 );
 
 const addFilter = ref(null);
@@ -92,7 +97,7 @@ function deleteRow(item) {
 
 watch(addFilter, value => {
     if (value) {
-        items.value.push(value);
+        items.value.push(JSON.parse(JSON.stringify(value)));
         addFilter.value = null;
     }
 });
@@ -115,7 +120,6 @@ watch(addFilter, value => {
                 }"
             />
         </template>
-
         <v-card
             v-bind="{
                 title: 'Gestisci filtri',
@@ -131,7 +135,6 @@ watch(addFilter, value => {
                     @click="close"
                 />
             </template>
-
             <v-data-table
                 v-bind="{
                     items,
